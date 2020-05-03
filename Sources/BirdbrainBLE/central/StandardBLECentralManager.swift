@@ -461,6 +461,7 @@ extension StandardBLECentralManager: CBPeripheralDelegate {
       os_log("CBPeripheralDelegate.peripheralIsReady unimplemented, should be handled by peripheral!", log: OSLog.standardBLECentralManager, type: .error)
    }
 
+   @available(iOS 11.0, *)
    public func peripheral(_ peripheral: CBPeripheral, didOpen channel: CBL2CAPChannel?, error: Error?) {
       os_log("CBPeripheralDelegate.didOpenChannel unimplemented, should be handled by peripheral!", log: OSLog.standardBLECentralManager, type: .error)
    }
