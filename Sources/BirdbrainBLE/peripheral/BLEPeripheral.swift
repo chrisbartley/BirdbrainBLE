@@ -8,7 +8,7 @@ import CoreBluetooth
 public protocol BLEPeripheral: class {
    var uuid: UUID { get }
 
-   var name: String { get }
+   var name: String? { get }
 
    var delegate: BLEPeripheralDelegate? { get set }
 

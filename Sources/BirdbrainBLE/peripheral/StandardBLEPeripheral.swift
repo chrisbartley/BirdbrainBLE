@@ -14,11 +14,11 @@ open class StandardBLEPeripheral: NSObject, BLEPeripheral {
       peripheral.identifier
    }
 
-   open var name: String {
+   open var name: String? {
       if let name = advertisementData[CBAdvertisementDataLocalNameKey] {
          return String(describing: name)
       }
-      return uuid.uuidString
+      return nil
    }
 
    public var delegate: BLEPeripheralDelegate?
