@@ -25,14 +25,12 @@ open class StandardBLEPeripheral: NSObject, BLEPeripheral {
 
    //MARK: - Private properties
 
-   private let serviceAndCharacteristicUUIDs: BLEPeripheralUUIDs
    private let peripheral: CBPeripheral
    private let advertisementData: [String : Any]
 
    //MARK: - Initializers
 
-   public init(serviceAndCharacteristicUUIDs: BLEPeripheralUUIDs, peripheral: CBPeripheral, advertisementData: [String : Any]) {
-      self.serviceAndCharacteristicUUIDs = serviceAndCharacteristicUUIDs
+   public init(peripheral: CBPeripheral, advertisementData: [String : Any]) {
       self.peripheral = peripheral
       self.advertisementData = advertisementData
       super.init()

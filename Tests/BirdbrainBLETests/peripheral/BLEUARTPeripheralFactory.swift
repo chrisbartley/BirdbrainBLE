@@ -22,8 +22,6 @@ public class BLEUARTPeripheralFactory: BLEPeripheralFactory {
    private init() {}
 
    public func create(peripheral: CBPeripheral, advertisementData: [String : Any]) -> BLEPeripheral {
-      StandardBLEPeripheral(serviceAndCharacteristicUUIDs: self,
-                            peripheral: peripheral,
-                            advertisementData: advertisementData)
+      StandardBLEPeripheral(peripheral: peripheral, advertisementData: advertisementData)
    }
 }
