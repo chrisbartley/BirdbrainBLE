@@ -31,14 +31,14 @@ final class BLECentralManagerTests: XCTestCase {
    }
 
    func testInit() {
-      XCTAssertNotNil(StandardBLECentralManager(peripheralFactory: BogusPeripheralFactory.instance))
-      XCTAssertNotNil(StandardBLECentralManager(peripheralFactory: BLEUARTPeripheralFactory.instance,
+      XCTAssertNotNil(StandardBLECentralManager(servicesAndCharacteristics: BogusServicesAndCharacteristics.instance))
+      XCTAssertNotNil(StandardBLECentralManager(servicesAndCharacteristics: BLEUARTServicesAndCharacteristics.instance,
                                                 delegate: NoOpBLECentralManagerDelegate()))
    }
 
    func testScanTimeout() {
       let delegate: ScanTimeoutDelegate = ScanTimeoutDelegate(self)
-      let centralManager = StandardBLECentralManager(peripheralFactory: BogusPeripheralFactory.instance,
+      let centralManager = StandardBLECentralManager(servicesAndCharacteristics: BogusServicesAndCharacteristics.instance,
                                                      delegate: delegate)
 
       // Wait for the powered on expectation to be fulfilled, or time out after 5 seconds
@@ -55,7 +55,7 @@ final class BLECentralManagerTests: XCTestCase {
    func testScanWhenAlreadyScanning() {
       let delegate: ScanTimeoutDelegate = ScanTimeoutDelegate(self)
       delegate.invertScanTimeoutExpectation()
-      let centralManager = StandardBLECentralManager(peripheralFactory: BogusPeripheralFactory.instance,
+      let centralManager = StandardBLECentralManager(servicesAndCharacteristics: BogusServicesAndCharacteristics.instance,
                                                      delegate: delegate)
 
       // Wait for the powered on expectation to be fulfilled, or time out after 5 seconds
@@ -85,7 +85,7 @@ final class BLECentralManagerTests: XCTestCase {
 
    func testScanDiscoverSuccessForBirdbrainBLEUARTPeripheral() {
       let delegate = ScanDiscoverSuccessDelegate(self)
-      let centralManager: BLECentralManager = StandardBLECentralManager(peripheralFactory: BLEUARTPeripheralFactory.instance,
+      let centralManager: BLECentralManager = StandardBLECentralManager(servicesAndCharacteristics: BLEUARTServicesAndCharacteristics.instance,
                                                                         delegate: delegate)
 
       // Wait for the powered on expectation to be fulfilled, or timeout after 5 seconds
@@ -108,7 +108,7 @@ final class BLECentralManagerTests: XCTestCase {
 
    func testScanRediscoverSuccessForBirdbrainBLEUARTPeripheral() {
       let delegate = ScanRediscoverSuccessDelegate(self)
-      let centralManager: BLECentralManager = StandardBLECentralManager(peripheralFactory: BLEUARTPeripheralFactory.instance,
+      let centralManager: BLECentralManager = StandardBLECentralManager(servicesAndCharacteristics: BLEUARTServicesAndCharacteristics.instance,
                                                                         delegate: delegate)
 
       // Wait for the powered on expectation to be fulfilled, or timeout after 5 seconds
@@ -131,7 +131,7 @@ final class BLECentralManagerTests: XCTestCase {
 
    func testConnectToNonExistentPeripheral() {
       let delegate = PoweredOnBLEDelegate(self)
-      let centralManager = StandardBLECentralManager(peripheralFactory: BLEUARTPeripheralFactory.instance,
+      let centralManager = StandardBLECentralManager(servicesAndCharacteristics: BLEUARTServicesAndCharacteristics.instance,
                                                      delegate: delegate)
 
       // Wait for the powered on expectation to be fulfilled, or timeout after 5 seconds
@@ -143,7 +143,7 @@ final class BLECentralManagerTests: XCTestCase {
 
    func testDisonnectFromNonExistentPeripheral() {
       let delegate = PoweredOnBLEDelegate(self)
-      let centralManager = StandardBLECentralManager(peripheralFactory: BLEUARTPeripheralFactory.instance,
+      let centralManager = StandardBLECentralManager(servicesAndCharacteristics: BLEUARTServicesAndCharacteristics.instance,
                                                      delegate: delegate)
 
       // Wait for the powered on expectation to be fulfilled, or timeout after 5 seconds
@@ -155,7 +155,7 @@ final class BLECentralManagerTests: XCTestCase {
 
    func testConnectToBirdbrainBLEUARTPeripheralSuccess() {
       let delegate = ConnectDisconnectSuccessDelegate(self)
-      let centralManager = StandardBLECentralManager(peripheralFactory: BLEUARTPeripheralFactory.instance,
+      let centralManager = StandardBLECentralManager(servicesAndCharacteristics: BLEUARTServicesAndCharacteristics.instance,
                                                      delegate: delegate)
 
       // Wait for the powered on expectation to be fulfilled, or timeout after 5 seconds
@@ -203,7 +203,7 @@ final class BLECentralManagerTests: XCTestCase {
 
    private func runTestsOnConnectedPeripheral(additionalTestsTimeout: TimeInterval = 5, _ additionalTests: (BLEPeripheral, XCTestExpectation) -> Void) {
       let delegate = ConnectDisconnectSuccessDelegate(self)
-      let centralManager = StandardBLECentralManager(peripheralFactory: BLEUARTPeripheralFactory.instance,
+      let centralManager = StandardBLECentralManager(servicesAndCharacteristics: BLEUARTServicesAndCharacteristics.instance,
                                                      delegate: delegate)
 
       // Wait for the powered on expectation to be fulfilled, or timeout after 5 seconds
@@ -257,7 +257,7 @@ final class BLECentralManagerTests: XCTestCase {
    func testIsPropertySupported() {
       runTestsOnConnectedPeripheral(additionalTestsTimeout: 0) { (peripheral, testsDoneExpectation) in
          print("Checking the various properties of the RX characteristic...")
-         let rx = BLEUARTPeripheralFactory.rxUUID
+         let rx = BLEUARTServicesAndCharacteristics.rxUUID
          XCTAssertFalse(peripheral.isPropertySupported(property: .broadcast, byCharacteristic: rx), "Property 'broadcast' should not be supported")
          XCTAssertFalse(peripheral.isPropertySupported(property: .read, byCharacteristic: rx), "Property 'read' should not be supported")
          XCTAssertFalse(peripheral.isPropertySupported(property: .writeWithoutResponse, byCharacteristic: rx), "Property 'writeWithoutResponse' should not be supported")
@@ -270,7 +270,7 @@ final class BLECentralManagerTests: XCTestCase {
          XCTAssertFalse(peripheral.isPropertySupported(property: .indicateEncryptionRequired, byCharacteristic: rx), "Property 'indicateEncryptionRequired' should not be supported")
 
          print("Checking the various properties of the TX characteristic...")
-         let tx = BLEUARTPeripheralFactory.txUUID
+         let tx = BLEUARTServicesAndCharacteristics.txUUID
          XCTAssertFalse(peripheral.isPropertySupported(property: .broadcast, byCharacteristic: tx), "Property 'broadcast' should not be supported")
          XCTAssertFalse(peripheral.isPropertySupported(property: .read, byCharacteristic: tx), "Property 'read' should not be supported")
          XCTAssertTrue(peripheral.isPropertySupported(property: .writeWithoutResponse, byCharacteristic: tx), "Property 'writeWithoutResponse' should be supported")
@@ -283,7 +283,7 @@ final class BLECentralManagerTests: XCTestCase {
          XCTAssertFalse(peripheral.isPropertySupported(property: .indicateEncryptionRequired, byCharacteristic: tx), "Property 'indicateEncryptionRequired' should not be supported")
 
          print("Checking the read property of a bogus characteristic...")
-         XCTAssertFalse(peripheral.isPropertySupported(property: CBCharacteristicProperties.read, byCharacteristic: BogusPeripheralFactory.char1UUID), "Property 'read' should not be supported by a nonexistent characteristic")
+         XCTAssertFalse(peripheral.isPropertySupported(property: CBCharacteristicProperties.read, byCharacteristic: BogusServicesAndCharacteristics.char1UUID), "Property 'read' should not be supported by a nonexistent characteristic")
 
          testsDoneExpectation.fulfill()
       }
@@ -294,7 +294,7 @@ final class BLECentralManagerTests: XCTestCase {
          print("Set the LEDs to blue, green, red and blink them 5 times")
 
          for n in 1...10 {
-            XCTAssertTrue(peripheral.writeWithoutResponse(bytes: (n % 2 == 0 ? ledOnCommand : ledOffCommand), toCharacteristic: BLEUARTPeripheralFactory.txUUID))
+            XCTAssertTrue(peripheral.writeWithoutResponse(bytes: (n % 2 == 0 ? ledOnCommand : ledOffCommand), toCharacteristic: BLEUARTServicesAndCharacteristics.txUUID))
             do {
                sleep(1)
             }
@@ -379,19 +379,19 @@ final class BLECentralManagerTests: XCTestCase {
                didEnableNotifying: {
                   // tell the peripheral to start notifying
                   print("[\(Date().timeIntervalSince1970)]: sending startNotificationsCommand")
-                  XCTAssertTrue(peripheral.writeWithResponse(bytes: self.startNotificationsCommand, toCharacteristic: BLEUARTPeripheralFactory.txUUID))
+                  XCTAssertTrue(peripheral.writeWithResponse(bytes: self.startNotificationsCommand, toCharacteristic: BLEUARTServicesAndCharacteristics.txUUID))
                },
                didWriteFirstValue: {
                   sleep(1)
 
                   // tell the peripheral to stop notifying
                   print("[\(Date().timeIntervalSince1970)]: sending stopNotificationsCommand")
-                  XCTAssertTrue(peripheral.writeWithResponse(bytes: self.stopNotificationsCommand, toCharacteristic: BLEUARTPeripheralFactory.txUUID))
+                  XCTAssertTrue(peripheral.writeWithResponse(bytes: self.stopNotificationsCommand, toCharacteristic: BLEUARTServicesAndCharacteristics.txUUID))
                },
                didWriteSecondValue: {
                   // disable
                   print("[\(Date().timeIntervalSince1970)]: calling setNotifyDisabled()")
-                  XCTAssertTrue(peripheral.setNotifyDisabled(onCharacteristic: BLEUARTPeripheralFactory.rxUUID))
+                  XCTAssertTrue(peripheral.setNotifyDisabled(onCharacteristic: BLEUARTServicesAndCharacteristics.rxUUID))
                },
                didDisableNotifying: { didReceiveUpdates in
                   if didReceiveUpdates {
@@ -404,7 +404,7 @@ final class BLECentralManagerTests: XCTestCase {
 
          // first need to enable notifications
          print("[\(Date().timeIntervalSince1970)]: calling setNotifyEnabled()")
-         XCTAssertTrue(peripheral.setNotifyEnabled(onCharacteristic: BLEUARTPeripheralFactory.rxUUID))
+         XCTAssertTrue(peripheral.setNotifyEnabled(onCharacteristic: BLEUARTServicesAndCharacteristics.rxUUID))
 
          print("[\(Date().timeIntervalSince1970)]: waiting for notification enable/disable dance to complete")
          wait(for: [promise], timeout: 2)

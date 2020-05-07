@@ -6,6 +6,10 @@ import Foundation
 import os
 import CoreBluetooth
 
+fileprivate extension OSLog {
+   static let log = OSLog(category: "StandardBLEPeripheral")
+}
+
 open class StandardBLEPeripheral: NSObject, BLEPeripheral {
 
    //MARK: - Public properties
@@ -14,12 +18,13 @@ open class StandardBLEPeripheral: NSObject, BLEPeripheral {
       peripheral.identifier
    }
 
+   /// This implementation returns the BLE advertised name (corresponding to the `CBAdvertisementDataLocalNameKey` key
+   /// in the advertisement data), if available; returns `nil` otherwise.
    open var name: String? {
-      if let name = advertisementData[CBAdvertisementDataLocalNameKey] {
-         return String(describing: name)
-      }
-      return nil
+      return advertisedName
    }
+
+   public let advertisedName: String?
 
    public var delegate: BLEPeripheralDelegate?
 
@@ -30,9 +35,17 @@ open class StandardBLEPeripheral: NSObject, BLEPeripheral {
 
    //MARK: - Initializers
 
-   public init(peripheral: CBPeripheral, advertisementData: [String : Any]) {
+   required public init(peripheral: CBPeripheral, advertisementData: [String : Any]) {
       self.peripheral = peripheral
       self.advertisementData = advertisementData
+
+      if let name = advertisementData[CBAdvertisementDataLocalNameKey] {
+         self.advertisedName = String(describing: name)
+      }
+      else {
+         self.advertisedName = nil
+      }
+
       super.init()
 
       self.peripheral.delegate = self
@@ -45,7 +58,7 @@ open class StandardBLEPeripheral: NSObject, BLEPeripheral {
          return characteristic.properties.contains(property)
       }
       else {
-         os_log("isPropertySupported: unknown characteristic [%s]", log: OSLog.standardBLEPeripheral, type: .default, uuid.uuidString)
+         os_log("isPropertySupported: unknown characteristic [%s]", log: OSLog.log, type: .default, uuid.uuidString)
       }
       return false
    }
@@ -65,7 +78,7 @@ open class StandardBLEPeripheral: NSObject, BLEPeripheral {
             return true
          }
          else {
-            os_log("read: characteristic [%s] does not support reads", log: OSLog.standardBLEPeripheral, type: .default, uuid.uuidString)
+            os_log("read: characteristic [%s] does not support reads", log: OSLog.log, type: .default, uuid.uuidString)
          }
       }
       return false
@@ -98,15 +111,15 @@ open class StandardBLEPeripheral: NSObject, BLEPeripheral {
                      return characteristic
                   }
                }
-               os_log("findCharacteristic: characteristic [%s] not found!", log: OSLog.standardBLEPeripheral, type: .default, uuid.uuidString)
+               os_log("findCharacteristic: characteristic [%s] not found!", log: OSLog.log, type: .default, uuid.uuidString)
             }
             else {
-               os_log("findCharacteristic: no characteristics found for service [%s]", log: OSLog.standardBLEPeripheral, type: .default, service.uuid.uuidString)
+               os_log("findCharacteristic: no characteristics found for service [%s]", log: OSLog.log, type: .default, service.uuid.uuidString)
             }
          }
       }
       else {
-         os_log("findCharacteristic: no services found", log: OSLog.standardBLEPeripheral, type: .default)
+         os_log("findCharacteristic: no services found", log: OSLog.log, type: .default)
       }
       return nil
    }
@@ -119,7 +132,7 @@ open class StandardBLEPeripheral: NSObject, BLEPeripheral {
             return true
          }
          else {
-            os_log("setNotifyEnabled: characteristic [%s] does not support notify or indicate", log: OSLog.standardBLEPeripheral, type: .default, uuid.uuidString)
+            os_log("setNotifyEnabled: characteristic [%s] does not support notify or indicate", log: OSLog.log, type: .default, uuid.uuidString)
          }
       }
       return false
@@ -133,7 +146,7 @@ open class StandardBLEPeripheral: NSObject, BLEPeripheral {
             return true
          }
          else {
-            os_log("setNotifyEnabled: characteristic [%s] does not support writeType [%s]", log: OSLog.standardBLEPeripheral, type: .default, uuid.uuidString, String(describing: writeType))
+            os_log("setNotifyEnabled: characteristic [%s] does not support writeType [%s]", log: OSLog.log, type: .default, uuid.uuidString, String(describing: writeType))
          }
       }
       return false
@@ -144,19 +157,19 @@ open class StandardBLEPeripheral: NSObject, BLEPeripheral {
 
 extension StandardBLEPeripheral: CBPeripheralDelegate {
    public func peripheralDidUpdateName(_ peripheral: CBPeripheral) {
-      os_log("CBPeripheralDelegate.peripheralDidUpdateName unimplemented!", log: OSLog.standardBLEPeripheral, type: .error)
+      os_log("CBPeripheralDelegate.peripheralDidUpdateName unimplemented!", log: OSLog.log, type: .error)
    }
 
    public func peripheral(_ peripheral: CBPeripheral, didModifyServices invalidatedServices: [CBService]) {
-      os_log("CBPeripheralDelegate.didModifyServices unimplemented!", log: OSLog.standardBLEPeripheral, type: .error)
+      os_log("CBPeripheralDelegate.didModifyServices unimplemented!", log: OSLog.log, type: .error)
    }
 
    public func peripheralDidUpdateRSSI(_ peripheral: CBPeripheral, error: Error?) {
-      os_log("CBPeripheralDelegate.peripheralDidUpdateRSSI unimplemented!", log: OSLog.standardBLEPeripheral, type: .error)
+      os_log("CBPeripheralDelegate.peripheralDidUpdateRSSI unimplemented!", log: OSLog.log, type: .error)
    }
 
    public func peripheral(_ peripheral: CBPeripheral, didReadRSSI RSSI: NSNumber, error: Error?) {
-      os_log("CBPeripheralDelegate.didReadRSSI unimplemented!", log: OSLog.standardBLEPeripheral, type: .error)
+      os_log("CBPeripheralDelegate.didReadRSSI unimplemented!", log: OSLog.log, type: .error)
    }
 
    public func peripheral(_ peripheral: CBPeripheral, didUpdateValueFor characteristic: CBCharacteristic, error: Error?) {
@@ -172,39 +185,39 @@ extension StandardBLEPeripheral: CBPeripheralDelegate {
    }
 
    public func peripheral(_ peripheral: CBPeripheral, didUpdateValueFor descriptor: CBDescriptor, error: Error?) {
-      os_log("CBPeripheralDelegate.didUpdateValueForDescriptor unimplemented!", log: OSLog.standardBLEPeripheral, type: .error)
+      os_log("CBPeripheralDelegate.didUpdateValueForDescriptor unimplemented!", log: OSLog.log, type: .error)
    }
 
    public func peripheral(_ peripheral: CBPeripheral, didWriteValueFor descriptor: CBDescriptor, error: Error?) {
-      os_log("CBPeripheralDelegate.didWriteValueForDescriptor unimplemented!", log: OSLog.standardBLEPeripheral, type: .error)
+      os_log("CBPeripheralDelegate.didWriteValueForDescriptor unimplemented!", log: OSLog.log, type: .error)
    }
 
    public func peripheralIsReady(toSendWriteWithoutResponse peripheral: CBPeripheral) {
-      os_log("CBPeripheralDelegate.peripheralIsReady unimplemented!", log: OSLog.standardBLEPeripheral, type: .error)
+      os_log("CBPeripheralDelegate.peripheralIsReady unimplemented!", log: OSLog.log, type: .error)
    }
 
    @available(iOS 11.0, *)
    public func peripheral(_ peripheral: CBPeripheral, didOpen channel: CBL2CAPChannel?, error: Error?) {
-      os_log("CBPeripheralDelegate.didOpenChannel unimplemented!", log: OSLog.standardBLEPeripheral, type: .error)
+      os_log("CBPeripheralDelegate.didOpenChannel unimplemented!", log: OSLog.log, type: .error)
    }
 
    // this should never be called, because the peripheral will already be connected and fully discovered before creation of this instance
    public func peripheral(_ peripheral: CBPeripheral, didDiscoverServices error: Error?) {
-      os_log("CBPeripheralDelegate.didDiscoverServices unimplemented, should have been handled by the central manager", log: OSLog.standardBLEPeripheral, type: .error)
+      os_log("CBPeripheralDelegate.didDiscoverServices unimplemented, should have been handled by the central manager", log: OSLog.log, type: .error)
    }
 
    // this should never be called, because the peripheral will already be connected and fully discovered before creation of this instance
    public func peripheral(_ peripheral: CBPeripheral, didDiscoverIncludedServicesFor service: CBService, error: Error?) {
-      os_log("CBPeripheralDelegate.didDiscoverIncludedServicesFor unimplemented, should have been handled by the central manager", log: OSLog.standardBLEPeripheral, type: .error)
+      os_log("CBPeripheralDelegate.didDiscoverIncludedServicesFor unimplemented, should have been handled by the central manager", log: OSLog.log, type: .error)
    }
 
    // this should never be called, because the peripheral will already be connected and fully discovered before creation of this instance
    public func peripheral(_ peripheral: CBPeripheral, didDiscoverCharacteristicsFor service: CBService, error: Error?) {
-      os_log("CBPeripheralDelegate.didDiscoverCharacteristicsFor unimplemented, should have been handled by the central manager", log: OSLog.standardBLEPeripheral, type: .error)
+      os_log("CBPeripheralDelegate.didDiscoverCharacteristicsFor unimplemented, should have been handled by the central manager", log: OSLog.log, type: .error)
    }
 
    // this should never be called, because the peripheral will already be connected and fully discovered before creation of this instance
    public func peripheral(_ peripheral: CBPeripheral, didDiscoverDescriptorsFor characteristic: CBCharacteristic, error: Error?) {
-      os_log("CBPeripheralDelegate.didDiscoverDescriptorsFor unimplemented, should have been handled by the central manager", log: OSLog.standardBLEPeripheral, type: .error)
+      os_log("CBPeripheralDelegate.didDiscoverDescriptorsFor unimplemented, should have been handled by the central manager", log: OSLog.log, type: .error)
    }
 }

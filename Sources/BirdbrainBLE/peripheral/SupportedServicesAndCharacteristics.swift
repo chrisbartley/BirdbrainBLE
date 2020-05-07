@@ -5,7 +5,7 @@
 import Foundation
 import CoreBluetooth
 
-public protocol BLEPeripheralUUIDs {
+public protocol SupportedServicesAndCharacteristics {
    var serviceUUIDs: [CBUUID] { get }
 
    func characteristicUUIDs(belongingToService service: CBService) -> [CBUUID]?

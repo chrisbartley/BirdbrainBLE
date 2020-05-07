@@ -2,8 +2,8 @@ import Foundation
 import CoreBluetooth
 @testable import BirdbrainBLE
 
-class BogusPeripheralFactory: BLEPeripheralFactory {
-   static let instance = BogusPeripheralFactory()
+class BogusServicesAndCharacteristics: SupportedServicesAndCharacteristics {
+   static let instance = BogusServicesAndCharacteristics()
 
    static let serviceUUID = CBUUID(string: "AAAAAAAA-BBBB-CCCC-DDDD-EEEEEEEEEEEE")
    static let char1UUID = CBUUID(string: "AAAAAAA1-BBBB-CCCC-DDDD-EEEEEEEEEEEE")
@@ -13,16 +13,12 @@ class BogusPeripheralFactory: BLEPeripheralFactory {
    private static let serviceAndCharacteristicUUIDs: [CBUUID : [CBUUID]] = [serviceUUID : [char1UUID, char2UUID, char3UUID]]
 
    var serviceUUIDs: [CBUUID] {
-      Array(BogusPeripheralFactory.serviceAndCharacteristicUUIDs.keys)
+      Array(BogusServicesAndCharacteristics.serviceAndCharacteristicUUIDs.keys)
    }
 
    func characteristicUUIDs(belongingToService service: CBService) -> [CBUUID]? {
-      BogusPeripheralFactory.serviceAndCharacteristicUUIDs[service.uuid]
+      BogusServicesAndCharacteristics.serviceAndCharacteristicUUIDs[service.uuid]
    }
 
    private init() {}
-
-   func create(peripheral: CBPeripheral, advertisementData: [String : Any]) -> BLEPeripheral {
-      StandardBLEPeripheral(peripheral: peripheral, advertisementData: advertisementData)
-   }
 }

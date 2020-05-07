@@ -6,6 +6,10 @@ import Foundation
 import os
 import CoreBluetooth
 
+fileprivate extension OSLog {
+   static let log = OSLog(category: "StandardBLECentralManager")
+}
+
 fileprivate enum BLEPeripheralState: String {
    case disconnected = "Disconnected"
    case connecting = "Connecting"
@@ -14,7 +18,7 @@ fileprivate enum BLEPeripheralState: String {
    case disconnecting = "Disconnecting"
 }
 
-open class StandardBLECentralManager: NSObject, BLECentralManager {
+public class StandardBLECentralManager: NSObject, BLECentralManager {
 
    //MARK: - Public Properties
 
@@ -23,23 +27,23 @@ open class StandardBLECentralManager: NSObject, BLECentralManager {
    //MARK: - Private Properties
 
    private var centralManager: CBCentralManager!
-   private let peripheralFactory: BLEPeripheralFactory
+   private let servicesAndCharacteristics: SupportedServicesAndCharacteristics
    private var peripheralInfoByUUID = [UUID : (peripheral: CBPeripheral,
-                                               blePeripheral: BLEPeripheral?,
+                                               blePeripheral: StandardBLEPeripheral?,
                                                advertisementData: [String : Any],
                                                lastSeen: Date, // motivated by https://fivepackcreative.com/3-things-know-ios-bluetooth-coding/
                                                state: BLEPeripheralState)]()
 
    //MARK: - Initializers
 
-   public convenience init(peripheralFactory: BLEPeripheralFactory,
+   public convenience init(servicesAndCharacteristics: SupportedServicesAndCharacteristics,
                            delegate: BLECentralManagerDelegate) {
-      self.init(peripheralFactory: peripheralFactory)
+      self.init(servicesAndCharacteristics: servicesAndCharacteristics)
       self.delegate = delegate
    }
 
-   public init(peripheralFactory: BLEPeripheralFactory) {
-      self.peripheralFactory = peripheralFactory
+   public init(servicesAndCharacteristics: SupportedServicesAndCharacteristics) {
+      self.servicesAndCharacteristics = servicesAndCharacteristics
       super.init();
       self.centralManager = CBCentralManager(delegate: self, queue: nil)
    }
@@ -57,17 +61,17 @@ open class StandardBLECentralManager: NSObject, BLECentralManager {
 
       // make sure BLE is powered on
       if centralManager.state != .poweredOn {
-         os_log("BLE powered off, cannot scan", log: OSLog.standardBLECentralManager, type: .default)
+         os_log("BLE powered off, cannot scan", log: OSLog.log, type: .default)
          return false
       }
 
       // make sure we're not already scanning
       if centralManager.isScanning {
-         os_log("Already scanning, nothing to do", log: OSLog.standardBLECentralManager, type: .debug)
+         os_log("Already scanning, nothing to do", log: OSLog.log, type: .debug)
          return false
       }
 
-      os_log("Scanning started", log: OSLog.standardBLECentralManager, type: .debug)
+      os_log("Scanning started", log: OSLog.log, type: .debug)
 
       if timeoutSecs > 0 {
          Timer.scheduledTimer(timeInterval: timeoutSecs, target: self, selector: #selector(scanTimeout), userInfo: nil, repeats: false)
@@ -77,7 +81,7 @@ open class StandardBLECentralManager: NSObject, BLECentralManager {
       peripheralInfoByUUID.removeAll()
 
       let options = [CBCentralManagerScanOptionAllowDuplicatesKey : allowDuplicates]
-      centralManager.scanForPeripherals(withServices: peripheralFactory.serviceUUIDs, options: options)
+      centralManager.scanForPeripherals(withServices: servicesAndCharacteristics.serviceUUIDs, options: options)
 
       return true
    }
@@ -86,7 +90,7 @@ open class StandardBLECentralManager: NSObject, BLECentralManager {
       if centralManager.isScanning {
          centralManager.stopScan()
 
-         os_log("Scanning stopped", log: OSLog.standardBLECentralManager, type: .debug)
+         os_log("Scanning stopped", log: OSLog.log, type: .debug)
          return true
       }
       return false
@@ -95,13 +99,13 @@ open class StandardBLECentralManager: NSObject, BLECentralManager {
    public func connectToPeripheral(havingUUID uuid: UUID) -> Bool {
       // make sure BLE is powered on
       if centralManager.state != .poweredOn {
-         os_log("BLE powered off, cannot connect", log: OSLog.standardBLECentralManager, type: .default)
+         os_log("BLE powered off, cannot connect", log: OSLog.log, type: .default)
          return false
       }
 
       if var peripheralInfo = peripheralInfoByUUID[uuid] {
          if peripheralInfo.state == .disconnected {
-            os_log("connectToPeripheral(%s): attempting connection, state=[%{public}s|%{public}s]", log: OSLog.standardBLECentralManager, type: .info,
+            os_log("connectToPeripheral(%s): attempting connection, state=[%{public}s|%{public}s]", log: OSLog.log, type: .info,
                    uuid.uuidString,
                    String(describing: peripheralInfo.state),
                    String(describing: peripheralInfo.peripheral.state))
@@ -115,13 +119,13 @@ open class StandardBLECentralManager: NSObject, BLECentralManager {
             return true
          }
          else {
-            os_log("connectToPeripheral(%s): not attempting connection since state is [%{public}s]", log: OSLog.standardBLECentralManager, type: .info,
+            os_log("connectToPeripheral(%s): not attempting connection since state is [%{public}s]", log: OSLog.log, type: .info,
                    uuid.uuidString,
                    String(describing: peripheralInfo.state))
          }
       }
       else {
-         os_log("connectToPeripheral(%s): unknown peripheral, cannot connect", log: OSLog.standardBLECentralManager, type: .default, uuid.uuidString)
+         os_log("connectToPeripheral(%s): unknown peripheral, cannot connect", log: OSLog.log, type: .default, uuid.uuidString)
       }
 
       return false
@@ -130,13 +134,13 @@ open class StandardBLECentralManager: NSObject, BLECentralManager {
    public func disconnectFromPeripheral(havingUUID uuid: UUID) -> Bool {
       // make sure BLE is powered on
       if centralManager.state != .poweredOn {
-         os_log("BLE powered off, cannot disconnect", log: OSLog.standardBLECentralManager, type: .default)
+         os_log("BLE powered off, cannot disconnect", log: OSLog.log, type: .default)
          return false
       }
 
       if var peripheralInfo = peripheralInfoByUUID[uuid] {
          if peripheralInfo.state == .connecting || peripheralInfo.state == .connectedAndDiscovering || peripheralInfo.state == .connectedAndDiscovered {
-            os_log("disconnectFromPeripheral(%s): attempting disconnection, state=[%{public}s|%{public}s]", log: OSLog.standardBLECentralManager, type: .info,
+            os_log("disconnectFromPeripheral(%s): attempting disconnection, state=[%{public}s|%{public}s]", log: OSLog.log, type: .info,
                    uuid.uuidString,
                    String(describing: peripheralInfo.state),
                    String(describing: peripheralInfo.peripheral.state))
@@ -149,11 +153,11 @@ open class StandardBLECentralManager: NSObject, BLECentralManager {
             return true
          }
          else {
-            os_log("disconnectFromPeripheral(%s): not attempting disconnection since state is [%{public}s]", log: OSLog.standardBLECentralManager, type: .info, uuid.uuidString, String(describing: peripheralInfo.state))
+            os_log("disconnectFromPeripheral(%s): not attempting disconnection since state is [%{public}s]", log: OSLog.log, type: .info, uuid.uuidString, String(describing: peripheralInfo.state))
          }
       }
       else {
-         os_log("disconnectFromPeripheral(%s): unknown peripheral, cannot disconnect", log: OSLog.standardBLECentralManager, type: .default, uuid.uuidString)
+         os_log("disconnectFromPeripheral(%s): unknown peripheral, cannot disconnect", log: OSLog.log, type: .default, uuid.uuidString)
       }
 
       return false
@@ -164,7 +168,7 @@ open class StandardBLECentralManager: NSObject, BLECentralManager {
    @objc private func scanTimeout() {
       if centralManager.isScanning {
          centralManager.stopScan()
-         os_log("Scanning stopped due to timeout", log: OSLog.standardBLECentralManager, type: .debug)
+         os_log("Scanning stopped due to timeout", log: OSLog.log, type: .debug)
 
          delegate?.didScanTimeout()
       }
@@ -188,22 +192,22 @@ extension StandardBLECentralManager: CBCentralManagerDelegate {
             if #available(iOS 13.0, *) {
                switch central.authorization {
                   case .denied:
-                     os_log("CBCentralManagerDelegate: Bluetooth usage denied", log: OSLog.standardBLECentralManager, type: .error)
+                     os_log("CBCentralManagerDelegate: Bluetooth usage denied", log: OSLog.log, type: .error)
                   case .restricted:
-                     os_log("CBCentralManagerDelegate: Bluetooth usage is restricted", log: OSLog.standardBLECentralManager, type: .error)
+                     os_log("CBCentralManagerDelegate: Bluetooth usage is restricted", log: OSLog.log, type: .error)
                   default:
-                     os_log("CBCentralManagerDelegate: Unexpected authorization", log: OSLog.standardBLECentralManager, type: .error)
+                     os_log("CBCentralManagerDelegate: Unexpected authorization", log: OSLog.log, type: .error)
                }
             }
             else {
-               os_log("CBCentralManagerDelegate: Bluetooth usage not authorized", log: OSLog.standardBLECentralManager, type: .error)
+               os_log("CBCentralManagerDelegate: Bluetooth usage not authorized", log: OSLog.log, type: .error)
             }
          case .unknown, .resetting, .unsupported:
             // TODO
-            os_log("CBCentralManagerDelegate: CBManagerState '%{public}s' not yet handled", log: OSLog.standardBLECentralManager, type: .error, String(describing: central.state))
+            os_log("CBCentralManagerDelegate: CBManagerState '%{public}s' not yet handled", log: OSLog.log, type: .error, String(describing: central.state))
 
          @unknown default:
-            os_log("CBCentralManagerDelegate: Unexpected CBManagerState '%{public}s' not yet handled", log: OSLog.standardBLECentralManager, type: .error, String(describing: central.state))
+            os_log("CBCentralManagerDelegate: Unexpected CBManagerState '%{public}s' not yet handled", log: OSLog.log, type: .error, String(describing: central.state))
       }
    }
 
@@ -221,7 +225,7 @@ extension StandardBLECentralManager: CBCentralManagerDelegate {
          peripheralInfo.advertisementData = advertisementData
          peripheralInfoByUUID[uuid] = peripheralInfo
 
-         os_log("CBCentralManagerDelegate.didDiscover: Re-discovered peripheral [%s] total=%d state=[%{public}s|%{public}s]", log: OSLog.standardBLECentralManager, type: .debug,
+         os_log("CBCentralManagerDelegate.didDiscover: Re-discovered peripheral [%s] total=%d state=[%{public}s|%{public}s]", log: OSLog.log, type: .debug,
                 uuid.uuidString,
                 peripheralInfoByUUID.count,
                 String(describing: peripheralInfo.state),
@@ -237,7 +241,7 @@ extension StandardBLECentralManager: CBCentralManagerDelegate {
                                        state: .disconnected)
 
          // notifiy the delegate of the new peripheral
-         os_log("CBCentralManagerDelegate.didDiscover: Discovered peripheral [%s] total=%d state=[%{public}s|%{public}s]", log: OSLog.standardBLECentralManager, type: .debug,
+         os_log("CBCentralManagerDelegate.didDiscover: Discovered peripheral [%s] total=%d state=[%{public}s|%{public}s]", log: OSLog.log, type: .debug,
                 uuid.uuidString,
                 peripheralInfoByUUID.count,
                 String(describing: BLEPeripheralState.disconnected),
@@ -252,7 +256,7 @@ extension StandardBLECentralManager: CBCentralManagerDelegate {
       if var peripheralInfo = peripheralInfoByUUID[uuid] {
          // make sure this isn't a duplicate didConnect notification (I was seeing these on MacOS, at least)
          if peripheralInfo.state == .connecting {
-            os_log("CBCentralManagerDelegate.didConnect: to peripheral [%s] state=[%{public}s|%{public}s], now discovering services...", log: OSLog.standardBLECentralManager, type: .info,
+            os_log("CBCentralManagerDelegate.didConnect: to peripheral [%s] state=[%{public}s|%{public}s], now discovering services...", log: OSLog.log, type: .info,
                    uuid.uuidString,
                    String(describing: peripheralInfo.state),
                    String(describing: peripheralInfo.peripheral.state))
@@ -266,17 +270,17 @@ extension StandardBLECentralManager: CBCentralManagerDelegate {
             peripheral.delegate = self
 
             // discover services
-            peripheral.discoverServices(peripheralFactory.serviceUUIDs)
+            peripheral.discoverServices(servicesAndCharacteristics.serviceUUIDs)
          }
          else {
-            os_log("CBCentralManagerDelegate.didConnect: ignoring duplicate didConnect for peripheral [%s] state=[%{public}s|%{public}s]", log: OSLog.standardBLECentralManager, type: .info,
+            os_log("CBCentralManagerDelegate.didConnect: ignoring duplicate didConnect for peripheral [%s] state=[%{public}s|%{public}s]", log: OSLog.log, type: .info,
                    uuid.uuidString,
                    String(describing: peripheralInfo.state),
                    String(describing: peripheralInfo.peripheral.state))
          }
       }
       else {
-         os_log("CBCentralManagerDelegate.didConnect: ignoring for undiscovered peripheral [%s]", log: OSLog.standardBLECentralManager, type: .error, uuid.uuidString)
+         os_log("CBCentralManagerDelegate.didConnect: ignoring for undiscovered peripheral [%s]", log: OSLog.log, type: .error, uuid.uuidString)
       }
    }
 
@@ -284,7 +288,7 @@ extension StandardBLECentralManager: CBCentralManagerDelegate {
       let uuid = peripheral.identifier
 
       if var peripheralInfo = peripheralInfoByUUID[uuid] {
-         os_log("CBCentralManagerDelegate.didDisconnectPeripheral: for peripheral [%s] state=[%{public}s|%{public}s]", log: OSLog.standardBLECentralManager, type: .info,
+         os_log("CBCentralManagerDelegate.didDisconnectPeripheral: for peripheral [%s] state=[%{public}s|%{public}s]", log: OSLog.log, type: .info,
                 uuid.uuidString,
                 String(describing: peripheralInfo.state),
                 String(describing: peripheralInfo.peripheral.state))
@@ -299,7 +303,7 @@ extension StandardBLECentralManager: CBCentralManagerDelegate {
          delegate?.didDisconnectFromPeripheral(uuid: uuid, error: error)
       }
       else {
-         os_log("CBCentralManagerDelegate.didDisconnectPeripheral: ignoring for undiscovered peripheral [%s]", log: OSLog.standardBLECentralManager, type: .error, uuid.uuidString)
+         os_log("CBCentralManagerDelegate.didDisconnectPeripheral: ignoring for undiscovered peripheral [%s]", log: OSLog.log, type: .error, uuid.uuidString)
       }
    }
 
@@ -307,7 +311,7 @@ extension StandardBLECentralManager: CBCentralManagerDelegate {
       let uuid = peripheral.identifier
 
       if var peripheralInfo = peripheralInfoByUUID[uuid] {
-         os_log("CBCentralManagerDelegate: didFailToConnect for peripheral [%s]: state=[%{public}s|%{public}s]", log: OSLog.standardBLECentralManager, type: .info,
+         os_log("CBCentralManagerDelegate: didFailToConnect for peripheral [%s]: state=[%{public}s|%{public}s]", log: OSLog.log, type: .info,
                 uuid.uuidString,
                 String(describing: peripheralInfo.state),
                 String(describing: peripheralInfo.peripheral.state))
@@ -322,7 +326,7 @@ extension StandardBLECentralManager: CBCentralManagerDelegate {
          delegate?.didFailToConnectToPeripheral(uuid: uuid, error: error)
       }
       else {
-         os_log("CBCentralManagerDelegate.didFailToConnect: ignoring for undiscovered peripheral [%s]", log: OSLog.standardBLECentralManager, type: .error, uuid.uuidString)
+         os_log("CBCentralManagerDelegate.didFailToConnect: ignoring for undiscovered peripheral [%s]", log: OSLog.log, type: .error, uuid.uuidString)
       }
    }
 }
@@ -331,24 +335,24 @@ extension StandardBLECentralManager: CBCentralManagerDelegate {
 
 extension StandardBLECentralManager: CBPeripheralDelegate {
    public func peripheralDidUpdateName(_ peripheral: CBPeripheral) {
-      os_log("CBPeripheralDelegate.peripheralDidUpdateName unimplemented!", log: OSLog.standardBLECentralManager, type: .error)
+      os_log("CBPeripheralDelegate.peripheralDidUpdateName unimplemented!", log: OSLog.log, type: .error)
    }
 
    public func peripheral(_ peripheral: CBPeripheral, didModifyServices invalidatedServices: [CBService]) {
-      os_log("CBPeripheralDelegate.didModifyServices unimplemented!", log: OSLog.standardBLECentralManager, type: .error)
+      os_log("CBPeripheralDelegate.didModifyServices unimplemented!", log: OSLog.log, type: .error)
    }
 
    public func peripheralDidUpdateRSSI(_ peripheral: CBPeripheral, error: Error?) {
-      os_log("CBPeripheralDelegate.peripheralDidUpdateRSSI unimplemented!", log: OSLog.standardBLECentralManager, type: .error)
+      os_log("CBPeripheralDelegate.peripheralDidUpdateRSSI unimplemented!", log: OSLog.log, type: .error)
    }
 
    public func peripheral(_ peripheral: CBPeripheral, didReadRSSI RSSI: NSNumber, error: Error?) {
-      os_log("CBPeripheralDelegate.didReadRSSI unimplemented!", log: OSLog.standardBLECentralManager, type: .error)
+      os_log("CBPeripheralDelegate.didReadRSSI unimplemented!", log: OSLog.log, type: .error)
    }
 
    public func peripheral(_ peripheral: CBPeripheral, didDiscoverServices error: Error?) {
       if let error = error {
-         os_log("CBPeripheralDelegate.didDiscoverServices(uuid=%s) error=%{public}s)", log: OSLog.standardBLECentralManager, type: .error,
+         os_log("CBPeripheralDelegate.didDiscoverServices(uuid=%s) error=%{public}s)", log: OSLog.log, type: .error,
                 peripheral.identifier.uuidString,
                 String(describing: error))
          delegate?.didFailToConnectToPeripheral(uuid: peripheral.identifier, error: error)
@@ -356,16 +360,16 @@ extension StandardBLECentralManager: CBPeripheralDelegate {
       else {
          // Iterate over the newly discovered services (just in case there's more than one) and discover characteristics for each
          if let peripheralServices = peripheral.services {
-            os_log("CBPeripheralDelegate.didDiscoverServices(uuid=%s): iterating over %d services:", log: OSLog.standardBLECentralManager, type: .debug,
+            os_log("CBPeripheralDelegate.didDiscoverServices(uuid=%s): iterating over %d services:", log: OSLog.log, type: .debug,
                    peripheral.identifier.uuidString,
                    peripheralServices.count)
 
             for service in peripheralServices {
-               os_log("CBPeripheralDelegate.didDiscoverServices(uuid=%s): discovering characteristics for service [%s]", log: OSLog.standardBLECentralManager, type: .debug,
+               os_log("CBPeripheralDelegate.didDiscoverServices(uuid=%s): discovering characteristics for service [%s]", log: OSLog.log, type: .debug,
                       peripheral.identifier.uuidString,
                       service.uuid.uuidString)
 
-               if let characteristicsUUIDs = peripheralFactory.characteristicUUIDs(belongingToService: service) {
+               if let characteristicsUUIDs = servicesAndCharacteristics.characteristicUUIDs(belongingToService: service) {
                   peripheral.discoverCharacteristics(Array(characteristicsUUIDs), for: service)
                }
                else {
@@ -374,14 +378,14 @@ extension StandardBLECentralManager: CBPeripheralDelegate {
             }
          }
          else {
-            os_log("CBPeripheralDelegate.didDiscoverServices(uuid=%s): no services found!", log: OSLog.standardBLECentralManager, type: .error, peripheral.identifier.uuidString)
+            os_log("CBPeripheralDelegate.didDiscoverServices(uuid=%s): no services found!", log: OSLog.log, type: .error, peripheral.identifier.uuidString)
             delegate?.didFailToConnectToPeripheral(uuid: peripheral.identifier, error: BLEError.noServicesFound)
          }
       }
    }
 
    public func peripheral(_ peripheral: CBPeripheral, didDiscoverIncludedServicesFor service: CBService, error: Error?) {
-      os_log("CBPeripheralDelegate.didDiscoverIncludedServicesFor unimplemented!", log: OSLog.standardBLECentralManager, type: .error)
+      os_log("CBPeripheralDelegate.didDiscoverIncludedServicesFor unimplemented!", log: OSLog.log, type: .error)
    }
 
    public func peripheral(_ peripheral: CBPeripheral, didDiscoverCharacteristicsFor service: CBService, error: Error?) {
@@ -389,7 +393,7 @@ extension StandardBLECentralManager: CBPeripheralDelegate {
 
       if var peripheralInfo = peripheralInfoByUUID[uuid] {
          if let error = error {
-            os_log("CBPeripheralDelegate.didDiscoverCharacteristicsFor(uuid=%s|service=%s) error=%{public}s)", log: OSLog.standardBLECentralManager, type: .error,
+            os_log("CBPeripheralDelegate.didDiscoverCharacteristicsFor(uuid=%s|service=%s) error=%{public}s)", log: OSLog.log, type: .error,
                    uuid.uuidString,
                    service.uuid.uuidString,
                    String(describing: error))
@@ -399,19 +403,19 @@ extension StandardBLECentralManager: CBPeripheralDelegate {
          else {
             // verify that we found all expected characteristics
             if let serviceCharacteristics = service.characteristics {
-               var expectedCharacteristicUUIDs: Set<String> = Set((peripheralFactory.characteristicUUIDs(belongingToService: service) ?? []).map {
+               var expectedCharacteristicUUIDs: Set<String> = Set((servicesAndCharacteristics.characteristicUUIDs(belongingToService: service) ?? []).map {
                   $0.uuidString
                })
                for characteristic in serviceCharacteristics {
-                  os_log("CBPeripheralDelegate.didDiscoverCharacteristicsFor(uuid=%s|service=%s): found characteristic [%s]", log: OSLog.standardBLECentralManager, type: .debug,
+                  os_log("CBPeripheralDelegate.didDiscoverCharacteristicsFor(uuid=%s|service=%s): found characteristic [%s]", log: OSLog.log, type: .debug,
                          uuid.uuidString,
                          service.uuid.uuidString,
                          characteristic.uuid.uuidString)
                   expectedCharacteristicUUIDs.remove(characteristic.uuid.uuidString)
                }
 
-               // use the factory to create a BLEPeripheral
-               let blePeripheral = peripheralFactory.create(peripheral: peripheral, advertisementData: peripheralInfo.advertisementData)
+               // create a BLEPeripheral
+               let blePeripheral = StandardBLEPeripheral(peripheral: peripheral, advertisementData: peripheralInfo.advertisementData)
 
                // update state
                peripheralInfo.state = .connectedAndDiscovered
@@ -421,7 +425,7 @@ extension StandardBLECentralManager: CBPeripheralDelegate {
                delegate?.didConnectToPeripheral(peripheral: blePeripheral)
             }
             else {
-               os_log("CBPeripheralDelegate.didDiscoverCharacteristicsFor(uuid=%s|service=%s) no characteristics found!", log: OSLog.standardBLECentralManager, type: .error,
+               os_log("CBPeripheralDelegate.didDiscoverCharacteristicsFor(uuid=%s|service=%s) no characteristics found!", log: OSLog.log, type: .error,
                       uuid.uuidString,
                       service.uuid.uuidString)
                delegate?.didFailToConnectToPeripheral(uuid: uuid, error: BLEError.noCharacteristicsFound)
@@ -429,40 +433,40 @@ extension StandardBLECentralManager: CBPeripheralDelegate {
          }
       }
       else {
-         os_log("CBPeripheralDelegate.didDiscoverCharacteristicsFor: ignoring for undiscovered peripheral [%s]", log: OSLog.standardBLECentralManager, type: .error, uuid.uuidString)
+         os_log("CBPeripheralDelegate.didDiscoverCharacteristicsFor: ignoring for undiscovered peripheral [%s]", log: OSLog.log, type: .error, uuid.uuidString)
       }
    }
 
    public func peripheral(_ peripheral: CBPeripheral, didUpdateValueFor characteristic: CBCharacteristic, error: Error?) {
-      os_log("CBPeripheralDelegate.didUpdateValueForCharacteristic unimplemented, should be handled by peripheral!", log: OSLog.standardBLECentralManager, type: .error)
+      os_log("CBPeripheralDelegate.didUpdateValueForCharacteristic unimplemented, should be handled by peripheral!", log: OSLog.log, type: .error)
    }
 
    public func peripheral(_ peripheral: CBPeripheral, didWriteValueFor characteristic: CBCharacteristic, error: Error?) {
-      os_log("CBPeripheralDelegate.didWriteValueForCharacteristic unimplemented, should be handled by peripheral!", log: OSLog.standardBLECentralManager, type: .error)
+      os_log("CBPeripheralDelegate.didWriteValueForCharacteristic unimplemented, should be handled by peripheral!", log: OSLog.log, type: .error)
    }
 
    public func peripheral(_ peripheral: CBPeripheral, didUpdateNotificationStateFor characteristic: CBCharacteristic, error: Error?) {
-      os_log("CBPeripheralDelegate.didUpdateNotificationStateForCharacteristic unimplemented, should be handled by peripheral!", log: OSLog.standardBLECentralManager, type: .error)
+      os_log("CBPeripheralDelegate.didUpdateNotificationStateForCharacteristic unimplemented, should be handled by peripheral!", log: OSLog.log, type: .error)
    }
 
    public func peripheral(_ peripheral: CBPeripheral, didDiscoverDescriptorsFor characteristic: CBCharacteristic, error: Error?) {
-      os_log("CBPeripheralDelegate.didDiscoverDescriptorsForCharacteristic unimplemented, should be handled by peripheral!", log: OSLog.standardBLECentralManager, type: .error)
+      os_log("CBPeripheralDelegate.didDiscoverDescriptorsForCharacteristic unimplemented, should be handled by peripheral!", log: OSLog.log, type: .error)
    }
 
    public func peripheral(_ peripheral: CBPeripheral, didUpdateValueFor descriptor: CBDescriptor, error: Error?) {
-      os_log("CBPeripheralDelegate.didUpdateValueForDescriptor unimplemented, should be handled by peripheral!", log: OSLog.standardBLECentralManager, type: .error)
+      os_log("CBPeripheralDelegate.didUpdateValueForDescriptor unimplemented, should be handled by peripheral!", log: OSLog.log, type: .error)
    }
 
    public func peripheral(_ peripheral: CBPeripheral, didWriteValueFor descriptor: CBDescriptor, error: Error?) {
-      os_log("CBPeripheralDelegate.didWriteValueForDescriptor unimplemented, should be handled by peripheral!", log: OSLog.standardBLECentralManager, type: .error)
+      os_log("CBPeripheralDelegate.didWriteValueForDescriptor unimplemented, should be handled by peripheral!", log: OSLog.log, type: .error)
    }
 
    public func peripheralIsReady(toSendWriteWithoutResponse peripheral: CBPeripheral) {
-      os_log("CBPeripheralDelegate.peripheralIsReady unimplemented, should be handled by peripheral!", log: OSLog.standardBLECentralManager, type: .error)
+      os_log("CBPeripheralDelegate.peripheralIsReady unimplemented, should be handled by peripheral!", log: OSLog.log, type: .error)
    }
 
    @available(iOS 11.0, *)
    public func peripheral(_ peripheral: CBPeripheral, didOpen channel: CBL2CAPChannel?, error: Error?) {
-      os_log("CBPeripheralDelegate.didOpenChannel unimplemented, should be handled by peripheral!", log: OSLog.standardBLECentralManager, type: .error)
+      os_log("CBPeripheralDelegate.didOpenChannel unimplemented, should be handled by peripheral!", log: OSLog.log, type: .error)
    }
 }
