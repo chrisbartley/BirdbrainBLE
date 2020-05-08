@@ -2,7 +2,7 @@ import XCTest
 import CoreBluetooth
 @testable import BirdbrainBLE
 
-final class BLECentralManagerTests: XCTestCase {
+final class BLETests: XCTestCase {
    private let bogusDeviceUUID = UUID.init(uuidString: "ABCDEFAB-CDEF-ABCD-EFAB-CDEFABCDEFAB")!
 
    let ledOnCommand: [UInt8] = [0xE0,
@@ -329,10 +329,10 @@ final class BLECentralManagerTests: XCTestCase {
 
             func blePeripheral(_ peripheral: BLEPeripheral, didUpdateNotificationStateFor characteristicUUID: CBUUID, isNotifying: Bool, error: Error?) {
                if let error = error {
-                  print("$$$$$$ TestPeripheralDelegate.didUpdateNotificationStateFor(\(peripheral)|\(characteristicUUID)|isNotifying=\(isNotifying)|error=\(error))")
+                  print("TestPeripheralDelegate.didUpdateNotificationStateFor(\(peripheral)|\(characteristicUUID)|isNotifying=\(isNotifying)|error=\(error))")
                }
                else {
-                  print("$$$$$$ TestPeripheralDelegate.didUpdateNotificationStateFor(\(peripheral)|\(characteristicUUID)|isNotifying=\(isNotifying))")
+                  print("TestPeripheralDelegate.didUpdateNotificationStateFor(\(peripheral)|\(characteristicUUID)|isNotifying=\(isNotifying))")
                   if (isNotifying) {
                      didEnableNotifying()
                   }
@@ -344,10 +344,10 @@ final class BLECentralManagerTests: XCTestCase {
 
             func blePeripheral(_ peripheral: BLEPeripheral, didWriteValueFor characteristicUUID: CBUUID, error: Error?) {
                if let error = error {
-                  print("$$$$$$ TestPeripheralDelegate.didWriteValueFor(\(peripheral)|\(characteristicUUID)|error=\(error))")
+                  print("TestPeripheralDelegate.didWriteValueFor(\(peripheral)|\(characteristicUUID)|error=\(error))")
                }
                else {
-                  print("$$$$$$ TestPeripheralDelegate.didWriteValueFor(\(peripheral)|\(characteristicUUID)")
+                  print("TestPeripheralDelegate.didWriteValueFor(\(peripheral)|\(characteristicUUID)")
                   numValuesWritten += 1
                   if numValuesWritten == 1 {
                      didWriteFirstValue()
@@ -360,15 +360,15 @@ final class BLECentralManagerTests: XCTestCase {
 
             func blePeripheral(_ peripheral: BLEPeripheral, didUpdateValueFor characteristicUUID: CBUUID, value: Data?, error: Error?) {
                if let error = error {
-                  print("$$$$$$ TestPeripheralDelegate.didUpdateValueFor(\(peripheral)|\(characteristicUUID)|error=\(error))")
+                  print("TestPeripheralDelegate.didUpdateValueFor(\(peripheral)|\(characteristicUUID)|error=\(error))")
                }
                else {
                   if let value = value {
                      didReceiveUpdates = true
-                     print("$$$$$$ TestPeripheralDelegate.didUpdateValueFor(\(peripheral)|\(characteristicUUID)|value=\(Array(value)))")
+                     print("TestPeripheralDelegate.didUpdateValueFor(\(peripheral)|\(characteristicUUID)|value=\(Array(value)))")
                   }
                   else {
-                     print("$$$$$$ TestPeripheralDelegate.didUpdateValueFor(\(peripheral)|\(characteristicUUID)|value=[nil]")
+                     print("TestPeripheralDelegate.didUpdateValueFor(\(peripheral)|\(characteristicUUID)|value=[nil]")
                   }
                }
             }
