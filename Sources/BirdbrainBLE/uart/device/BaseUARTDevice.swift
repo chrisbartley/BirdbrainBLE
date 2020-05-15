@@ -47,7 +47,6 @@ open class BaseUARTDevice: UARTDevice {
       memorableName = UARTDeviceNameGenerator.instance.generateNameFrom(advertisedName: blePeripheral.name)
       self.blePeripheral = blePeripheral
       self.blePeripheral.delegate = self
-      os_log("Hello from BaseUARTDevice", log: OSLog.log, type: .debug)
    }
 
    //MARK: - Public Methods
