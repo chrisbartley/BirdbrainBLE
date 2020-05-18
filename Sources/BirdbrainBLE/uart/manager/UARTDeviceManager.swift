@@ -10,7 +10,7 @@ fileprivate extension OSLog {
    static let log = OSLog(category: "UARTDeviceManager")
 }
 
-public class UARTDeviceManager<DeviceType: ManageableUARTDevice> {
+open class UARTDeviceManager<DeviceType: ManageableUARTDevice> {
 
    //MARK: - Public Properties
 
@@ -39,23 +39,23 @@ public class UARTDeviceManager<DeviceType: ManageableUARTDevice> {
 
    //MARK: - Public Methods
 
-   public func startScanning() -> Bool {
+   open func startScanning() -> Bool {
       return bleCentralManager.startScanning(timeoutSecs: -1)
    }
 
-   public func stopScanning() -> Bool {
+   open func stopScanning() -> Bool {
       return bleCentralManager.stopScanning()
    }
 
-   public func connectToDevice(havingUUID uuid: UUID) -> Bool {
+   open func connectToDevice(havingUUID uuid: UUID) -> Bool {
       return bleCentralManager.connectToPeripheral(havingUUID: uuid)
    }
 
-   public func disconnectFromDevice(havingUUID uuid: UUID) -> Bool {
+   open func disconnectFromDevice(havingUUID uuid: UUID) -> Bool {
       return bleCentralManager.disconnectFromPeripheral(havingUUID: uuid)
    }
 
-   public func getDevice(uuid: UUID) -> DeviceType? {
+   open func getDevice(uuid: UUID) -> DeviceType? {
       return devices[uuid]
    }
 }
