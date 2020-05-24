@@ -90,10 +90,8 @@ extension UARTDeviceManager: BLECentralManagerDelegate {
 
    public func didDiscoverPeripheral(uuid: UUID, advertisementData: [String : Any], rssi: NSNumber) {
       if scanFilter.isOfType(uuid: uuid, advertisementData: advertisementData, rssi: rssi) {
-         let nameAndAdvertisedName = UARTDeviceNameGenerator.instance.generateNameFrom(advertisementData: advertisementData)
          delegate?.didDiscover(uuid: uuid,
-                               name: nameAndAdvertisedName.name,
-                               advertisedName: nameAndAdvertisedName.advertisedName,
+                               advertisementSignature: AdvertisementSignature(advertisementData: advertisementData),
                                advertisementData: advertisementData,
                                rssi: rssi)
       }
@@ -104,10 +102,8 @@ extension UARTDeviceManager: BLECentralManagerDelegate {
 
    public func didRediscoverPeripheral(uuid: UUID, advertisementData: [String : Any], rssi: NSNumber) {
       if scanFilter.isOfType(uuid: uuid, advertisementData: advertisementData, rssi: rssi) {
-         let nameAndAdvertisedName = UARTDeviceNameGenerator.instance.generateNameFrom(advertisementData: advertisementData)
          delegate?.didRediscover(uuid: uuid,
-                                 name: nameAndAdvertisedName.name,
-                                 advertisedName: nameAndAdvertisedName.advertisedName,
+                                 advertisementSignature: AdvertisementSignature(advertisementData: advertisementData),
                                  advertisementData: advertisementData,
                                  rssi: rssi)
       }

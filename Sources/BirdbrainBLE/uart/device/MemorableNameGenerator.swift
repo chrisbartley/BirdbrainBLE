@@ -19,17 +19,17 @@ import CoreBluetooth
 //    }
 // }
 
-public class UARTDeviceNameGenerator {
-   public static let instance = UARTDeviceNameGenerator()
+class MemorableNameGenerator {
+   static let instance = MemorableNameGenerator()
 
-   public func generateNameFrom(advertisementData: [String : Any]) -> (advertisedName: String?, name: String?) {
+   func generateNameFrom(advertisementData: [String : Any]) -> (advertisedName: String?, name: String?) {
       if let advertisedName = advertisementData[CBAdvertisementDataLocalNameKey] as? String {
          return (name: generateNameFrom(advertisedName: advertisedName), advertisedName: advertisedName)
       }
       return (advertisedName: nil, name: nil)
    }
 
-   public func generateNameFrom(advertisedName: String?) -> String? {
+   func generateNameFrom(advertisedName: String?) -> String? {
       if let advertisedName = advertisedName {
          // We generate the device name from the last five characters of the advertised name (those characters are
          // typically from the device's MAC address which is not available via Core Bluetooth.

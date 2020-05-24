@@ -2,8 +2,47 @@ import XCTest
 import CoreBluetooth
 @testable import BirdbrainBLE
 
+// Based on https://stackoverflow.com/a/24263296/703200
+extension CGColor {
+   static func create(red: Int, green: Int, blue: Int, alpha: CGFloat = 1.0) -> CGColor {
+      assert(red >= 0 && red <= 255, "Invalid red component")
+      assert(green >= 0 && green <= 255, "Invalid green component")
+      assert(blue >= 0 && blue <= 255, "Invalid blue component")
+
+      return CGColor(red: CGFloat(red) / 255.0, green: CGFloat(green) / 255.0, blue: CGFloat(blue) / 255.0, alpha: alpha)
+   }
+
+   static func create(rgb: Int, alpha: CGFloat = 1.0) -> CGColor {
+      return CGColor.create(red: (rgb >> 16) & 0xFF,
+                            green: (rgb >> 8) & 0xFF,
+                            blue: rgb & 0xFF,
+                            alpha: alpha)
+   }
+}
+
+fileprivate struct Colors {
+   static let red = CGColor.create(rgb: 0xFF0000)
+   static let green = CGColor.create(rgb: 0x00FF00)
+   static let blue = CGColor.create(rgb: 0x0000FF)
+   static let yellow = CGColor.create(rgb: 0xFFFF00)
+   static let magenta = CGColor.create(rgb: 0xFF00FF)
+   static let teal = CGColor.create(rgb: 0x00FFFF)
+   static let white = CGColor.create(rgb: 0xFFFFFF)
+
+   private init() {}
+}
+
 fileprivate class ConnectDisconnectDeviceManagerDelegate: UARTDeviceManagerDelegate {
 
+   static private let colors = [
+      CGColor.create(rgb: 0xFF0000), // red
+      CGColor.create(rgb: 0x00FF00), // green
+      CGColor.create(rgb: 0x0000FF), // blue
+      CGColor.create(rgb: 0xFFFF00), // yellow
+      CGColor.create(rgb: 0xFF00FF), // magenta
+      CGColor.create(rgb: 0x00FFFF), // teal
+      CGColor.create(rgb: 0xFFFFFF), // white
+   ]
    private let testCase: XCTestCase
    private let enabledExpectation: XCTestExpectation
    private let scanDiscoverSuccessExpectation: XCTestExpectation
@@ -32,14 +71,14 @@ fileprivate class ConnectDisconnectDeviceManagerDelegate: UARTDeviceManagerDeleg
       XCTFail("Delegate received didScanTimeout()!")
    }
 
-   func didDiscover(uuid: UUID, name: String?, advertisedName: String?, advertisementData: [String : Any], rssi: Foundation.NSNumber) {
-      print("Delegate received didDiscover(uuid=\(uuid),name=\(String(describing: name)),advertisedName=\(String(describing: advertisedName))")
+   func didDiscover(uuid: UUID, advertisementSignature: AdvertisementSignature?, advertisementData: [String : Any], rssi: Foundation.NSNumber) {
+      print("Delegate received didDiscover(uuid=\(uuid),advertisementSignature=\(String(describing: advertisementSignature))")
       discoveredUUID = uuid
       scanDiscoverSuccessExpectation.fulfill()
    }
 
-   func didRediscover(uuid: UUID, name: String?, advertisedName: String?, advertisementData: [String : Any], rssi: Foundation.NSNumber) {
-      print("Delegate received didRediscover(uuid=\(uuid),name=\(String(describing: name)),advertisedName=\(String(describing: advertisedName))")
+   func didRediscover(uuid: UUID, advertisementSignature: AdvertisementSignature?, advertisementData: [String : Any], rssi: Foundation.NSNumber) {
+      print("Delegate received didRediscover(uuid=\(uuid),advertisementSignature=\(String(describing: advertisementSignature))")
    }
 
    func didConnectTo(uuid: UUID) {
@@ -193,23 +232,54 @@ final class UARTTests: XCTestCase {
       }
    }
 
-   func testDeviceNameGenerator() {
-      let name1 = (advertised: "CTCF2C3", expected: "Singing Scarlet Tiger")
-      let name2 = (advertised: "CTC0D80", expected: "Intrepid Copper Slug")
-      let name3 = (advertised: "GBD521C", expected: "Creative Lime Bee")
-      let name4 = (advertised: "GB932CA", expected: "Spikey Titanium Seahorse")
-      let name5 = (advertised: "728E4", expected: "Thorny Plum Lion")
-      XCTAssertEqual(UARTDeviceNameGenerator.instance.generateNameFrom(advertisedName: name1.advertised), name1.expected)
-      XCTAssertEqual(UARTDeviceNameGenerator.instance.generateNameFrom(advertisedName: name2.advertised), name2.expected)
-      XCTAssertEqual(UARTDeviceNameGenerator.instance.generateNameFrom(advertisedName: name3.advertised), name3.expected)
-      XCTAssertEqual(UARTDeviceNameGenerator.instance.generateNameFrom(advertisedName: name4.advertised), name4.expected)
-      XCTAssertEqual(UARTDeviceNameGenerator.instance.generateNameFrom(advertisedName: name5.advertised), name5.expected)
-      XCTAssertNil(UARTDeviceNameGenerator.instance.generateNameFrom(advertisedName: ""))
-      XCTAssertNil(UARTDeviceNameGenerator.instance.generateNameFrom(advertisedName: "FFFF"))
-      XCTAssertNil(UARTDeviceNameGenerator.instance.generateNameFrom(advertisedName: "   0D80"))
-      XCTAssertNil(UARTDeviceNameGenerator.instance.generateNameFrom(advertisedName: "0D80   "))
-      XCTAssertNil(UARTDeviceNameGenerator.instance.generateNameFrom(advertisedName: "   0D80   "))
-      XCTAssertNil(UARTDeviceNameGenerator.instance.generateNameFrom(advertisedName: "Z890F"))
+   func testAdvertisementSignature() {
+      let name1 = (advertised: "CTCF2C3", expected: (memorable: "Singing Scarlet Tiger", device: "CF2C3", colors: (color0: Colors.green, color1: Colors.green, color2: Colors.blue)))
+      let name2 = (advertised: "CTC0D80", expected: (memorable: "Intrepid Copper Slug", device: "C0D80", colors: (color0: Colors.green, color1: Colors.white, color2: Colors.white)))
+      let name3 = (advertised: "GBD521C", expected: (memorable: "Creative Lime Bee", device: "D521C", colors: (color0: Colors.white, color1: Colors.magenta, color2: Colors.magenta)))
+      let name4 = (advertised: "GB932CA", expected: (memorable: "Spikey Titanium Seahorse", device: "932CA", colors: (color0: Colors.green, color1: Colors.green, color2: Colors.green)))
+      let name5 = (advertised: "728E4", expected: (memorable: "Thorny Plum Lion", device: "728E4", colors: (color0: Colors.magenta, color1: Colors.teal, color2: Colors.red)))
+
+      let as1 = AdvertisementSignature(advertisedName: name1.advertised)
+      let as2 = AdvertisementSignature(advertisedName: name2.advertised)
+      let as3 = AdvertisementSignature(advertisedName: name3.advertised)
+      let as4 = AdvertisementSignature(advertisedName: name4.advertised)
+      let as5 = AdvertisementSignature(advertisedName: name5.advertised)
+      XCTAssertNotNil(as1)
+      XCTAssertNotNil(as2)
+      XCTAssertNotNil(as3)
+      XCTAssertNotNil(as4)
+      XCTAssertNotNil(as5)
+      XCTAssertEqual(as1?.memorableName, name1.expected.memorable)
+      XCTAssertEqual(as2?.memorableName, name2.expected.memorable)
+      XCTAssertEqual(as3?.memorableName, name3.expected.memorable)
+      XCTAssertEqual(as4?.memorableName, name4.expected.memorable)
+      XCTAssertEqual(as5?.memorableName, name5.expected.memorable)
+      XCTAssertEqual(as1?.deviceName, name1.expected.device)
+      XCTAssertEqual(as2?.deviceName, name2.expected.device)
+      XCTAssertEqual(as3?.deviceName, name3.expected.device)
+      XCTAssertEqual(as4?.deviceName, name4.expected.device)
+      XCTAssertEqual(as5?.deviceName, name5.expected.device)
+      XCTAssertEqual(as1?.colors.color0, name1.expected.colors.color0)
+      XCTAssertEqual(as2?.colors.color0, name2.expected.colors.color0)
+      XCTAssertEqual(as3?.colors.color0, name3.expected.colors.color0)
+      XCTAssertEqual(as4?.colors.color0, name4.expected.colors.color0)
+      XCTAssertEqual(as5?.colors.color0, name5.expected.colors.color0)
+      XCTAssertEqual(as1?.colors.color1, name1.expected.colors.color1)
+      XCTAssertEqual(as2?.colors.color1, name2.expected.colors.color1)
+      XCTAssertEqual(as3?.colors.color1, name3.expected.colors.color1)
+      XCTAssertEqual(as4?.colors.color1, name4.expected.colors.color1)
+      XCTAssertEqual(as5?.colors.color1, name5.expected.colors.color1)
+      XCTAssertEqual(as1?.colors.color2, name1.expected.colors.color2)
+      XCTAssertEqual(as2?.colors.color2, name2.expected.colors.color2)
+      XCTAssertEqual(as3?.colors.color2, name3.expected.colors.color2)
+      XCTAssertEqual(as4?.colors.color2, name4.expected.colors.color2)
+      XCTAssertEqual(as5?.colors.color2, name5.expected.colors.color2)
+      XCTAssertNil(AdvertisementSignature(advertisedName: ""))
+      XCTAssertNil(AdvertisementSignature(advertisedName: "FFFF"))
+      XCTAssertNil(AdvertisementSignature(advertisedName: "   0D80"))
+      XCTAssertNil(AdvertisementSignature(advertisedName: "0D80   "))
+      XCTAssertNil(AdvertisementSignature(advertisedName: "   0D80   "))
+      XCTAssertNil(AdvertisementSignature(advertisedName: "Z890F"))
    }
 
    func testAdvertisedNamePrefixScanFilter() {
@@ -255,7 +325,7 @@ final class UARTTests: XCTestCase {
       ("testCubeTowerConnectDisconnectSuccess", testCubeTowerConnectDisconnectSuccess),
       ("testCubeTowerStateUpdateSuccess", testCubeTowerStateUpdateSuccess),
       ("testCubeTowerSetLEDsSuccess", testCubeTowerSetLEDsSuccess),
-      ("testDeviceNameGenerator", testDeviceNameGenerator),
+      ("testAdvertisementSignature", testAdvertisementSignature),
       ("testAdvertisedNamePrefixScanFilter", testAdvertisedNamePrefixScanFilter),
    ]
 }

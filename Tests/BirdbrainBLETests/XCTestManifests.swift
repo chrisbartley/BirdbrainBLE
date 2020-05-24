@@ -27,10 +27,10 @@
       // to regenerate.
       static let __allTests__UARTTests = [
          ("testAdvertisedNamePrefixScanFilter", testAdvertisedNamePrefixScanFilter),
+         ("testAdvertisementSignature", testAdvertisementSignature),
          ("testCubeTowerConnectDisconnectSuccess", testCubeTowerConnectDisconnectSuccess),
          ("testCubeTowerSetLEDsSuccess", testCubeTowerSetLEDsSuccess),
          ("testCubeTowerStateUpdateSuccess", testCubeTowerStateUpdateSuccess),
-         ("testDeviceNameGenerator", testDeviceNameGenerator),
          ("testLinuxTestSuiteIncludesAllTests", testLinuxTestSuiteIncludesAllTests),
       ]
    }

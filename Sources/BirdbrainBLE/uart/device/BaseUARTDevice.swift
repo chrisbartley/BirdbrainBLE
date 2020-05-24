@@ -23,13 +23,7 @@ open class BaseUARTDevice: UARTDevice {
       return blePeripheral.uuid
    }
 
-   public var name: String? {
-      return memorableName
-   }
-
-   open var advertisedName: String? {
-      blePeripheral.name
-   }
+   public private(set) var advertisementSignature: AdvertisementSignature?
 
    public var delegate: UARTDeviceDelegate?
 
@@ -37,14 +31,12 @@ open class BaseUARTDevice: UARTDevice {
 
    private let blePeripheral: BLEPeripheral
 
-   private let memorableName: String?
-
    public private(set) var rawState: Data?
 
    //MARK: - Initializers
 
    required public init(blePeripheral: BLEPeripheral) {
-      memorableName = UARTDeviceNameGenerator.instance.generateNameFrom(advertisedName: blePeripheral.name)
+      advertisementSignature = AdvertisementSignature(advertisedName: blePeripheral.name)
       self.blePeripheral = blePeripheral
       self.blePeripheral.delegate = self
    }

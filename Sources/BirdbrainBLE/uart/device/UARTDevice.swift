@@ -5,8 +5,7 @@
 import Foundation
 
 public protocol UARTDevice: UARTDeviceIdentifier {
-   var name: String? { get }
-   var advertisedName: String? { get }
+   var advertisementSignature: AdvertisementSignature? { get }
 
    var delegate: UARTDeviceDelegate? { get set }
 
