@@ -6,6 +6,10 @@ import Foundation
 import CoreGraphics
 import CoreBluetooth
 
+#if canImport(UIKit)
+   import UIKit
+#endif
+
 public struct AdvertisementSignature {
    static private let colors = [
       CGColor.create(rgb: 0xFF0000), // red
@@ -71,7 +75,11 @@ extension CGColor {
       assert(green >= 0 && green <= 255, "Invalid green component")
       assert(blue >= 0 && blue <= 255, "Invalid blue component")
 
-      return CGColor(red: CGFloat(red) / 255.0, green: CGFloat(green) / 255.0, blue: CGFloat(blue) / 255.0, alpha: alpha)
+      #if os(iOS)
+         return UIColor(red: CGFloat(red) / 255.0, green: CGFloat(green) / 255.0, blue: CGFloat(blue) / 255.0, alpha: alpha).cgColor
+      #else
+         return CGColor(red: CGFloat(red) / 255.0, green: CGFloat(green) / 255.0, blue: CGFloat(blue) / 255.0, alpha: alpha)
+      #endif
    }
 
    static func create(rgb: Int, alpha: CGFloat = 1.0) -> CGColor {
