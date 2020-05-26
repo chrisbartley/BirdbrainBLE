@@ -39,10 +39,12 @@ open class UARTDeviceManager<DeviceType: ManageableUARTDevice> {
 
    //MARK: - Public Methods
 
+   @discardableResult
    open func startScanning() -> Bool {
       return bleCentralManager.startScanning(timeoutSecs: -1)
    }
 
+   @discardableResult
    open func stopScanning() -> Bool {
       return bleCentralManager.stopScanning()
    }
