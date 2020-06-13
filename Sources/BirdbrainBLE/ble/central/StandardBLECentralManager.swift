@@ -20,6 +20,8 @@ fileprivate enum BLEPeripheralState: String {
 
 public class StandardBLECentralManager: NSObject, BLECentralManager {
 
+   static public let defaultAssumeDisappearanceTimeInterval: TimeInterval = 3.0
+
    //MARK: - Public Properties
 
    public var delegate: BLECentralManagerDelegate?
@@ -51,13 +53,18 @@ public class StandardBLECentralManager: NSObject, BLECentralManager {
    //MARK: - Public Methods
 
    public func startScanning(timeoutSecs: TimeInterval) -> Bool {
-      return startScanning(timeoutSecs: timeoutSecs, allowDuplicates: true)
+      return startScanning(timeoutSecs: timeoutSecs,
+                           assumeDisappearanceAfter: StandardBLECentralManager.defaultAssumeDisappearanceTimeInterval,
+                           allowDuplicates: true)
    }
 
    // Note that Apple's docs say this about CBCentralManagerScanOptionAllowDuplicatesKey: "Disabling this filtering
    // [i.e. setting to true] can have an adverse effect on battery life; use it only if necessary."  Also, I read
    // elsewhere (https://stackoverflow.com/a/44515562/703200) that allowing duplicates will prevent background scans.
-   public func startScanning(timeoutSecs: TimeInterval, allowDuplicates: Bool) -> Bool {
+   @discardableResult
+   public func startScanning(timeoutSecs: TimeInterval,
+                             assumeDisappearanceAfter: TimeInterval = StandardBLECentralManager.defaultAssumeDisappearanceTimeInterval,
+                             allowDuplicates: Bool = true) -> Bool {
 
       // make sure BLE is powered on
       if centralManager.state != .poweredOn {
@@ -77,8 +84,23 @@ public class StandardBLECentralManager: NSObject, BLECentralManager {
          Timer.scheduledTimer(timeInterval: timeoutSecs, target: self, selector: #selector(scanTimeout), userInfo: nil, repeats: false)
       }
 
-      // clear our collection of discovered peripherals (TODO: eventually remove this, and let the lastSeen inspector remove stale peripherals)
+      // clear our collection of discovered peripherals
       peripheralInfoByUUID.removeAll()
+
+      // look for disappeared peripherals every half second
+      Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { timer in
+         if self.centralManager.state != .poweredOn || !self.centralManager.isScanning {
+            timer.invalidate()
+         }
+         else {
+            for (uuid, peripheralInfo) in self.peripheralInfoByUUID {
+               if abs(peripheralInfo.lastSeen.timeIntervalSinceNow) >= abs(assumeDisappearanceAfter) {
+                  self.peripheralInfoByUUID.removeValue(forKey: uuid)
+                  self.delegate?.didPeripheralDisappear(uuid: uuid)
+               }
+            }
+         }
+      }
 
       let options = [CBCentralManagerScanOptionAllowDuplicatesKey : allowDuplicates]
       centralManager.scanForPeripherals(withServices: servicesAndCharacteristics.serviceUUIDs, options: options)
@@ -86,6 +108,7 @@ public class StandardBLECentralManager: NSObject, BLECentralManager {
       return true
    }
 
+   @discardableResult
    public func stopScanning() -> Bool {
       if centralManager.isScanning {
          centralManager.stopScan()

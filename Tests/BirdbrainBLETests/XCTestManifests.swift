@@ -13,6 +13,7 @@
          ("testInit", testInit),
          ("testIsPropertySupported", testIsPropertySupported),
          ("testLinuxTestSuiteIncludesAllTests", testLinuxTestSuiteIncludesAllTests),
+         ("testPeripheralDisappeared", testPeripheralDisappeared),
          ("testScanDiscoverSuccessForBirdbrainBLEUARTPeripheral", testScanDiscoverSuccessForBirdbrainBLEUARTPeripheral),
          ("testScanRediscoverSuccessForBirdbrainBLEUARTPeripheral", testScanRediscoverSuccessForBirdbrainBLEUARTPeripheral),
          ("testScanTimeout", testScanTimeout),
@@ -31,6 +32,7 @@
          ("testCubeTowerConnectDisconnectSuccess", testCubeTowerConnectDisconnectSuccess),
          ("testCubeTowerSetLEDsSuccess", testCubeTowerSetLEDsSuccess),
          ("testCubeTowerStateUpdateSuccess", testCubeTowerStateUpdateSuccess),
+         ("testDeviceDisappearanceSuccess", testDeviceDisappearanceSuccess),
          ("testLinuxTestSuiteIncludesAllTests", testLinuxTestSuiteIncludesAllTests),
       ]
    }

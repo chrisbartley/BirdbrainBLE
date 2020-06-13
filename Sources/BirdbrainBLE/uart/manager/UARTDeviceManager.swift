@@ -20,7 +20,7 @@ open class UARTDeviceManager<DeviceType: ManageableUARTDevice> {
 
    private let bleCentralManager: StandardBLECentralManager
 
-   private var devices = [UUID : DeviceType]()
+   private var connectedDevices = [UUID : DeviceType]()
 
    private let scanFilter: UARTDeviceScanFilter
 
@@ -40,8 +40,9 @@ open class UARTDeviceManager<DeviceType: ManageableUARTDevice> {
    //MARK: - Public Methods
 
    @discardableResult
-   open func startScanning() -> Bool {
-      return bleCentralManager.startScanning(timeoutSecs: -1)
+   open func startScanning(timeoutSecs: TimeInterval = -1,
+                           assumeDisappearanceAfter: TimeInterval = StandardBLECentralManager.defaultAssumeDisappearanceTimeInterval) -> Bool {
+      return bleCentralManager.startScanning(timeoutSecs: timeoutSecs, assumeDisappearanceAfter: assumeDisappearanceAfter)
    }
 
    @discardableResult
@@ -58,7 +59,7 @@ open class UARTDeviceManager<DeviceType: ManageableUARTDevice> {
    }
 
    open func getDevice(uuid: UUID) -> DeviceType? {
-      return devices[uuid]
+      return connectedDevices[uuid]
    }
 }
 
@@ -114,13 +115,17 @@ extension UARTDeviceManager: BLECentralManagerDelegate {
       }
    }
 
+   public func didPeripheralDisappear(uuid: UUID) {
+      delegate?.didDisappear(uuid: uuid)
+   }
+
    public func didConnectToPeripheral(peripheral: BLEPeripheral) {
-      devices[peripheral.uuid] = DeviceType(blePeripheral: peripheral)
+      connectedDevices[peripheral.uuid] = DeviceType(blePeripheral: peripheral)
       delegate?.didConnectTo(uuid: peripheral.uuid)
    }
 
    public func didDisconnectFromPeripheral(uuid: UUID, error: Error?) {
-      if let _ = devices.removeValue(forKey: uuid) {
+      if let _ = connectedDevices.removeValue(forKey: uuid) {
          delegate?.didDisconnectFrom(uuid: uuid, error: error)
       }
    }

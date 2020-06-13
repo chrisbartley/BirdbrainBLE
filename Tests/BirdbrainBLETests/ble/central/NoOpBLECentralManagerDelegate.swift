@@ -15,6 +15,8 @@ class NoOpBLECentralManagerDelegate: BLECentralManagerDelegate {
 
    func didRediscoverPeripheral(uuid: UUID, advertisementData: [String : Any], rssi: NSNumber) {}
 
+   func didPeripheralDisappear(uuid: UUID) {}
+
    func didConnectToPeripheral(peripheral: BLEPeripheral) {}
 
    func didDisconnectFromPeripheral(uuid: UUID, error: Error?) {}

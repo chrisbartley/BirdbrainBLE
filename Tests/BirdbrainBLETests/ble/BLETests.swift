@@ -52,6 +52,27 @@ final class BLETests: XCTestCase {
       XCTAssertTrue(true)
    }
 
+   func testPeripheralDisappeared() {
+      let delegate: PeripheralDisappearedDelegate = PeripheralDisappearedDelegate(self)
+
+      let centralManager = StandardBLECentralManager(servicesAndCharacteristics: BLEUARTServicesAndCharacteristics.instance,
+                                                     delegate: delegate)
+
+      // Wait for the powered on expectation to be fulfilled, or time out after 5 seconds
+      print("Waiting for BLE state to switch to powered on...")
+      delegate.waitForPoweredOnExpectation()
+
+      print("Scanning...")
+      print("ACTION REQUIRED: Turn on one or more Birdbrain UART devices, then turn them all off (in any order) to verify handling of peripheral disappearance.")
+      XCTAssertTrue(centralManager.startScanning(timeoutSecs: 600.0, assumeDisappearanceAfter: 1.0), "Expected startScanning() to return true")
+
+      // Wait for the scan timeout expectation to be fulfilled, or time out after 5 seconds
+      delegate.waitForPeripheralDisappearedExpectation(timeout: 600.0)
+      centralManager.stopScanning()
+      centralManager.delegate = nil
+      XCTAssertTrue(true)
+   }
+
    func testScanWhenAlreadyScanning() {
       let delegate: ScanTimeoutDelegate = ScanTimeoutDelegate(self)
       delegate.invertScanTimeoutExpectation()
@@ -85,8 +106,8 @@ final class BLETests: XCTestCase {
 
    func testScanDiscoverSuccessForBirdbrainBLEUARTPeripheral() {
       let delegate = ScanDiscoverSuccessDelegate(self)
-      let centralManager: BLECentralManager = StandardBLECentralManager(servicesAndCharacteristics: BLEUARTServicesAndCharacteristics.instance,
-                                                                        delegate: delegate)
+      let centralManager = StandardBLECentralManager(servicesAndCharacteristics: BLEUARTServicesAndCharacteristics.instance,
+                                                     delegate: delegate)
 
       // Wait for the powered on expectation to be fulfilled, or timeout after 5 seconds
       print("Waiting for BLE state to switch to powered on...")
@@ -108,8 +129,8 @@ final class BLETests: XCTestCase {
 
    func testScanRediscoverSuccessForBirdbrainBLEUARTPeripheral() {
       let delegate = ScanRediscoverSuccessDelegate(self)
-      let centralManager: BLECentralManager = StandardBLECentralManager(servicesAndCharacteristics: BLEUARTServicesAndCharacteristics.instance,
-                                                                        delegate: delegate)
+      let centralManager = StandardBLECentralManager(servicesAndCharacteristics: BLEUARTServicesAndCharacteristics.instance,
+                                                     delegate: delegate)
 
       // Wait for the powered on expectation to be fulfilled, or timeout after 5 seconds
       print("Waiting for BLE state to switch to powered on...")
@@ -421,6 +442,7 @@ final class BLETests: XCTestCase {
       ("testLinuxTestSuiteIncludesAllTests", testLinuxTestSuiteIncludesAllTests),
       ("testInit", testInit),
       ("testScanTimeout", testScanTimeout),
+      ("testPeripheralDisappeared", testPeripheralDisappeared),
       ("testScanWhenAlreadyScanning", testScanWhenAlreadyScanning),
       ("testScanDiscoverSuccessForBirdbrainBLEUARTPeripheral", testScanDiscoverSuccessForBirdbrainBLEUARTPeripheral),
       ("testScanRediscoverSuccessForBirdbrainBLEUARTPeripheral", testScanRediscoverSuccessForBirdbrainBLEUARTPeripheral),

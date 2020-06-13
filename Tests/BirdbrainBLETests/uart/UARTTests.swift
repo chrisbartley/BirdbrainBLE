@@ -40,6 +40,49 @@ fileprivate struct Colors {
    private init() {}
 }
 
+fileprivate class DisappearDeviceManagerDelegate: UARTDeviceManagerDelegate {
+   private let testCase: XCTestCase
+   private let enabledExpectation: XCTestExpectation
+   private let scanDiscoverSuccessExpectation: XCTestExpectation
+   private let disappearExpectation: XCTestExpectation
+
+   init(_ testCase: XCTestCase) {
+      self.testCase = testCase
+      self.enabledExpectation = testCase.expectation(description: "UART Device Manager enabled")
+      self.scanDiscoverSuccessExpectation = testCase.expectation(description: "UART Device Manager scan succeeded")
+      self.disappearExpectation = testCase.expectation(description: "Device disappeared")
+   }
+
+   func didUpdateState(to state: UARTDeviceManagerState) {
+      print("DisappearDeviceManagerDelegate: Delegate received didUpdateState(\(state))")
+      if state == .enabled {
+         enabledExpectation.fulfill()
+      }
+   }
+
+   func didDiscover(uuid: UUID, advertisementSignature: AdvertisementSignature?, advertisementData: [String : Any], rssi: Foundation.NSNumber) {
+      print("DisappearDeviceManagerDelegate: Delegate received didDiscover(uuid=\(uuid),advertisementSignature=\(String(describing: advertisementSignature))")
+      scanDiscoverSuccessExpectation.fulfill()
+   }
+
+   func didDisappear(uuid: UUID) {
+      print("DisappearDeviceManagerDelegate: Delegate received didDisappear(uuid=\(uuid))")
+      disappearExpectation.fulfill()
+   }
+
+   func waitForEnabledExpectation(timeout: TimeInterval = 5) {
+      testCase.wait(for: [enabledExpectation], timeout: timeout)
+   }
+
+   func waitForScanDiscoverSuccessExpectation(timeout: TimeInterval = 5) {
+      testCase.wait(for: [scanDiscoverSuccessExpectation], timeout: timeout)
+   }
+
+   func waitForDisappearExpectation(timeout: TimeInterval = 5) {
+      testCase.wait(for: [disappearExpectation], timeout: timeout)
+   }
+}
+
 fileprivate class ConnectDisconnectDeviceManagerDelegate: UARTDeviceManagerDelegate {
 
    static private let colors = [
@@ -198,6 +241,26 @@ final class UARTTests: XCTestCase {
       }
    }
 
+   func testDeviceDisappearanceSuccess() {
+      let delegate = DisappearDeviceManagerDelegate(self)
+      let deviceManager = UARTDeviceManager<CubeTower>(scanFilter: AllowAllScanFilter.instance, delegate: delegate)
+
+      // Wait for the enabled expectation to be fulfilled, or timeout after 5 seconds
+      print("Waiting for UARTDeviceManager to be enabled...")
+      delegate.waitForEnabledExpectation()
+
+      print("Scanning...")
+      if deviceManager.startScanning() {
+         delegate.waitForScanDiscoverSuccessExpectation()
+         print("ACTION REQUIRED: Now turn off the device to test device disappearance...")
+         delegate.waitForDisappearExpectation(timeout: 60.0)
+         XCTAssertTrue(deviceManager.stopScanning())
+      }
+      else {
+         XCTFail("Scanning should have started")
+      }
+   }
+
    func testCubeTowerConnectDisconnectSuccess() {
       runCubeTowerTests(additionalTestsTimeout: 0) { (cubeTower, testsDoneExpectation) in
          testsDoneExpectation.fulfill()
@@ -330,6 +393,7 @@ final class UARTTests: XCTestCase {
 
    static var allTests = [
       ("testLinuxTestSuiteIncludesAllTests", testLinuxTestSuiteIncludesAllTests),
+      ("testDeviceDisappearanceSuccess", testDeviceDisappearanceSuccess),
       ("testCubeTowerConnectDisconnectSuccess", testCubeTowerConnectDisconnectSuccess),
       ("testCubeTowerStateUpdateSuccess", testCubeTowerStateUpdateSuccess),
       ("testCubeTowerSetLEDsSuccess", testCubeTowerSetLEDsSuccess),
