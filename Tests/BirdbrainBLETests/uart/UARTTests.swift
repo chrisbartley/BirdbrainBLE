@@ -85,15 +85,6 @@ fileprivate class DisappearDeviceManagerDelegate: UARTDeviceManagerDelegate {
 
 fileprivate class ConnectDisconnectDeviceManagerDelegate: UARTDeviceManagerDelegate {
 
-   static private let colors = [
-      CGColor.create(rgb: 0xFF0000), // red
-      CGColor.create(rgb: 0x00FF00), // green
-      CGColor.create(rgb: 0x0000FF), // blue
-      CGColor.create(rgb: 0xFFFF00), // yellow
-      CGColor.create(rgb: 0xFF00FF), // magenta
-      CGColor.create(rgb: 0x00FFFF), // teal
-      CGColor.create(rgb: 0xFFFFFF), // white
-   ]
    private let testCase: XCTestCase
    private let enabledExpectation: XCTestExpectation
    private let scanDiscoverSuccessExpectation: XCTestExpectation
