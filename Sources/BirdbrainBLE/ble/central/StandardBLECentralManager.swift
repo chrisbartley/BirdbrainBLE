@@ -84,9 +84,6 @@ public class StandardBLECentralManager: NSObject, BLECentralManager {
          Timer.scheduledTimer(timeInterval: timeoutSecs, target: self, selector: #selector(scanTimeout), userInfo: nil, repeats: false)
       }
 
-      // clear our collection of discovered peripherals
-      peripheralInfoByUUID.removeAll()
-
       // look for disappeared peripherals every half second
       Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { timer in
          if self.centralManager.state != .poweredOn || !self.centralManager.isScanning {
@@ -94,7 +91,10 @@ public class StandardBLECentralManager: NSObject, BLECentralManager {
          }
          else {
             for (uuid, peripheralInfo) in self.peripheralInfoByUUID {
-               if abs(peripheralInfo.lastSeen.timeIntervalSinceNow) >= abs(assumeDisappearanceAfter) {
+               // if this peripheral isn't connected AND hasn't been seen recently, then flag it as disappeared
+               if peripheralInfo.state == .disconnected &&
+                  abs(peripheralInfo.lastSeen.timeIntervalSinceNow) >= abs(assumeDisappearanceAfter) {
+                  os_log("Flagging peripheral %s as disappeared", log: OSLog.log, type: .debug, uuid.uuidString)
                   self.peripheralInfoByUUID.removeValue(forKey: uuid)
                   self.delegate?.didPeripheralDisappear(uuid: uuid)
                }
