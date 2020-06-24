@@ -21,7 +21,7 @@ class PeripheralDisappearedDelegate: PoweredOnBLEDelegate {
    override func didPeripheralDisappear(uuid: UUID) {
       discoveredPeripherals.remove(uuid)
       print("Delegate received didPeripheralDisappear [\(uuid)] (total remaining: \(discoveredPeripherals.count))")
-      if discoveredPeripherals.count == 0 {
+      if discoveredPeripherals.isEmpty {
          print("All discovered peripherals have disappeared.  All done!")
          expectation.fulfill()
       }
