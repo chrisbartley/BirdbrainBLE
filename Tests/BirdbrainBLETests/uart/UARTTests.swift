@@ -245,7 +245,6 @@ final class UARTTests: XCTestCase {
       print("ACTION REQUIRED: Turn on one or more Birdbrain UART devices, then turn them all off (in any order) to verify handling of peripheral disappearance.")
       XCTAssertTrue(deviceManager.startScanning(timeoutSecs: 600.0, assumeDisappearanceAfter: 1.0), "Expected startScanning() to return true")
 
-      // Wait for the scan timeout expectation to be fulfilled, or time out after 5 seconds
       delegate.waitForDisappearExpectation(timeout: 600.0)
       XCTAssertTrue(deviceManager.stopScanning())
    }
