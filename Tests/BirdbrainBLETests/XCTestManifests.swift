@@ -9,7 +9,7 @@
          ("testConnectToBirdbrainBLEUARTPeripheralSuccess", testConnectToBirdbrainBLEUARTPeripheralSuccess),
          ("testConnectToNonExistentPeripheral", testConnectToNonExistentPeripheral),
          ("testCubeTowerRxNotify", testCubeTowerRxNotify),
-         ("testDisonnectFromNonExistentPeripheral", testDisonnectFromNonExistentPeripheral),
+         ("testDisconnectFromNonExistentPeripheral", testDisconnectFromNonExistentPeripheral),
          ("testInit", testInit),
          ("testIsPropertySupported", testIsPropertySupported),
          ("testLinuxTestSuiteIncludesAllTests", testLinuxTestSuiteIncludesAllTests),

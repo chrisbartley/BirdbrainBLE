@@ -162,7 +162,7 @@ final class BLETests: XCTestCase {
       XCTAssertFalse(centralManager.connectToPeripheral(havingUUID: bogusDeviceUUID))
    }
 
-   func testDisonnectFromNonExistentPeripheral() {
+   func testDisconnectFromNonExistentPeripheral() {
       let delegate = PoweredOnBLEDelegate(self)
       let centralManager = StandardBLECentralManager(servicesAndCharacteristics: BLEUARTServicesAndCharacteristics.instance,
                                                      delegate: delegate)
@@ -447,7 +447,7 @@ final class BLETests: XCTestCase {
       ("testScanDiscoverSuccessForBirdbrainBLEUARTPeripheral", testScanDiscoverSuccessForBirdbrainBLEUARTPeripheral),
       ("testScanRediscoverSuccessForBirdbrainBLEUARTPeripheral", testScanRediscoverSuccessForBirdbrainBLEUARTPeripheral),
       ("testConnectToNonExistentPeripheral", testConnectToNonExistentPeripheral),
-      ("testDisonnectFromNonExistentPeripheral", testDisonnectFromNonExistentPeripheral),
+      ("testDisconnectFromNonExistentPeripheral", testDisconnectFromNonExistentPeripheral),
       ("testConnectToBirdbrainBLEUARTPeripheralSuccess", testConnectToBirdbrainBLEUARTPeripheralSuccess),
       ("testIsPropertySupported", testIsPropertySupported),
       ("testWriteBySettingCubeTowerLEDs", testWriteBySettingCubeTowerLEDs),
