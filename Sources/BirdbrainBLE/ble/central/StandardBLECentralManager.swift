@@ -52,15 +52,38 @@ public class StandardBLECentralManager: NSObject, BLECentralManager {
 
    //MARK: - Public Methods
 
+   // Note that Apple's docs say this about CBCentralManagerScanOptionAllowDuplicatesKey: "Disabling this filtering
+   // [i.e. setting to true] can have an adverse effect on battery life; use it only if necessary."  Also, I read
+   // elsewhere (https://stackoverflow.com/a/44515562/703200) that allowing duplicates will prevent background scans.
+
+   /// Starts scanning, with a timeout of `timeoutSecs`.  Assumes disappearance of peripherals after
+   /// `StandardBLECentralManager.defaultAssumeDisappearanceTimeInterval` seconds.
+   ///
+   /// Warning: this implmentation assumes and requires that a peripheral has an advertising name for it to be
+   /// "discovered". That is, a discovery message from CoreBluetooth for a UUID we've not seen before which doesn't
+   /// contain an advertising name will be ignored.
+   ///
+   /// - Parameter timeoutSecs: number of seconds to scan until timing out
+   /// - Returns: true if scanning was successfully initiated; false otherwise.
+   @discardableResult
    public func startScanning(timeoutSecs: TimeInterval) -> Bool {
       return startScanning(timeoutSecs: timeoutSecs,
                            assumeDisappearanceAfter: StandardBLECentralManager.defaultAssumeDisappearanceTimeInterval,
                            allowDuplicates: true)
    }
 
-   // Note that Apple's docs say this about CBCentralManagerScanOptionAllowDuplicatesKey: "Disabling this filtering
-   // [i.e. setting to true] can have an adverse effect on battery life; use it only if necessary."  Also, I read
-   // elsewhere (https://stackoverflow.com/a/44515562/703200) that allowing duplicates will prevent background scans.
+   /// Starts scanning, with a timeout of `timeoutSecs`, and assumes disappearance after the given `assumeDisappearanceAfter`
+   /// TimeInterval (or `StandardBLECentralManager.defaultAssumeDisappearanceTimeInterval` if not provided).
+   ///
+   /// Warning: this implmentation assumes and requires that a peripheral has an advertising name for it to be
+   /// "discovered". That is, a discovery message from CoreBluetooth for a UUID we've not seen before which doesn't
+   /// contain an advertising name will be ignored.
+   ///
+   /// - Parameters:
+   ///   - timeoutSecs: number of seconds to scan until timing out
+   ///   - assumeDisappearanceAfter: TimeInterval before considering a peripheral as having disappeared
+   ///   - allowDuplicates: whether to allow duplicate scan discoveries, defaults to true
+   /// - Returns:
    @discardableResult
    public func startScanning(timeoutSecs: TimeInterval,
                              assumeDisappearanceAfter: TimeInterval = StandardBLECentralManager.defaultAssumeDisappearanceTimeInterval,
