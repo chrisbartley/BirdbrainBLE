@@ -241,11 +241,18 @@ extension StandardBLECentralManager: CBCentralManagerDelegate {
 
       let uuid = peripheral.identifier
 
+      // print("IN DISCOVERY [\(uuid)]:")
+      // for (key, val) in advertisementData {
+      //    print("   [\(key)]=[\(val)]")
+      // }
+
       // determine whether we've seen this one before and add/update accordingingly
       if var peripheralInfo = peripheralInfoByUUID[uuid] {
-         // we've seen this one before, so simply update lastSeen and advertisementData
+         // we've seen this one before, so simply update lastSeen and advertisementData.  We'll update advertisementData
+         // by merging in the new data rather than simply replacing.  This lets us keep track of everything we've ever
+         // learned about the peripheral.
          peripheralInfo.lastSeen = Date()
-         peripheralInfo.advertisementData = advertisementData
+         peripheralInfo.advertisementData = peripheralInfo.advertisementData.merging(advertisementData) { (_, new) in new}
          peripheralInfoByUUID[uuid] = peripheralInfo
 
          os_log("CBCentralManagerDelegate.didDiscover: Re-discovered peripheral [%s] total=%d state=[%{public}s|%{public}s]", log: OSLog.log, type: .debug,
@@ -253,23 +260,36 @@ extension StandardBLECentralManager: CBCentralManagerDelegate {
                 peripheralInfoByUUID.count,
                 String(describing: peripheralInfo.state),
                 String(describing: peripheralInfo.peripheral.state))
-         delegate?.didRediscoverPeripheral(uuid: uuid, advertisementData: advertisementData, rssi: rssi)
+
+         // when notifying the delegate, send the *merged* advertisementData, rather than the one we just received, so
+         // that we'll be sure to include everything we've ever known about the peripheral (for our purposes, this
+         // ensures that we always include the (last-known) advertising name).
+         delegate?.didRediscoverPeripheral(uuid: uuid, advertisementData: peripheralInfo.advertisementData, rssi: rssi)
       }
       else {
-         // this one is new, so we need to add it to the peripheralInfo collection
-         peripheralInfoByUUID[uuid] = (peripheral: peripheral,
-                                       blePeripheral: nil,
-                                       advertisementData: advertisementData,
-                                       lastSeen: Date(),
-                                       state: .disconnected)
+         // This one is new, but first check whether it's connectable AND that the advertising name is included in the
+         // advertisement data before we add it to our collection and notify the delegate.
+         if let isConnectable = advertisementData[CBAdvertisementDataIsConnectable] as? NSNumber,
+            isConnectable == 1,
+            let _ = advertisementData[CBAdvertisementDataLocalNameKey] as? String {
+            // add it to the peripheralInfo collection
+            peripheralInfoByUUID[uuid] = (peripheral: peripheral,
+                                          blePeripheral: nil,
+                                          advertisementData: advertisementData,
+                                          lastSeen: Date(),
+                                          state: .disconnected)
 
-         // notifiy the delegate of the new peripheral
-         os_log("CBCentralManagerDelegate.didDiscover: Discovered peripheral [%s] total=%d state=[%{public}s|%{public}s]", log: OSLog.log, type: .debug,
-                uuid.uuidString,
-                peripheralInfoByUUID.count,
-                String(describing: BLEPeripheralState.disconnected),
-                String(describing: peripheral.state))
-         delegate?.didDiscoverPeripheral(uuid: uuid, advertisementData: advertisementData, rssi: rssi)
+            // notifiy the delegate of the new peripheral
+            os_log("CBCentralManagerDelegate.didDiscover: Discovered peripheral [%s] total=%d state=[%{public}s|%{public}s]", log: OSLog.log, type: .debug,
+                   uuid.uuidString,
+                   peripheralInfoByUUID.count,
+                   String(describing: BLEPeripheralState.disconnected),
+                   String(describing: peripheral.state))
+            delegate?.didDiscoverPeripheral(uuid: uuid, advertisementData: advertisementData, rssi: rssi)
+         }
+         else {
+            os_log("CBCentralManagerDelegate.didDiscover: Ignoring non-connectable discovery of peripheral [%s]", log: OSLog.log, type: .debug, uuid.uuidString)
+         }
       }
    }
 

@@ -156,16 +156,6 @@ fileprivate class ConnectDisconnectDeviceManagerDelegate: UARTDeviceManagerDeleg
    }
 }
 
-fileprivate class AllowAllScanFilter: UARTDeviceScanFilter {
-   static public let instance = AllowAllScanFilter()
-
-   public func isOfType(uuid: UUID, advertisementData: [String : Any], rssi: NSNumber) -> Bool {
-      return true
-   }
-
-   private init() {}
-}
-
 final class UARTTests: XCTestCase {
 
    // See https://oleb.net/blog/2017/03/keeping-xctest-in-sync/
@@ -185,7 +175,7 @@ final class UARTTests: XCTestCase {
    private func runCubeTowerTests(additionalTestsTimeout: TimeInterval = 5, _ additionalTests: (CubeTower, XCTestExpectation) -> Void) {
 
       let delegate = ConnectDisconnectDeviceManagerDelegate(self)
-      let deviceManager = UARTDeviceManager<CubeTower>(scanFilter: AllowAllScanFilter.instance, delegate: delegate)
+      let deviceManager = UARTDeviceManager<CubeTower>(scanFilter: AdvertisedNamePrefixScanFilter(prefix: "CT"), delegate: delegate)
 
       // Wait for the enabled expectation to be fulfilled, or timeout after 5 seconds
       print("Waiting for UARTDeviceManager to be enabled...")
@@ -233,17 +223,17 @@ final class UARTTests: XCTestCase {
       }
    }
 
-   func testDeviceDisappearanceSuccess() {
+   func testCubeTowerDisappearanceSuccess() {
       let delegate = DisappearDeviceManagerDelegate(self)
-      let deviceManager = UARTDeviceManager<CubeTower>(scanFilter: AllowAllScanFilter.instance, delegate: delegate)
+      let deviceManager = UARTDeviceManager<CubeTower>(scanFilter: AdvertisedNamePrefixScanFilter(prefix: "CT"), delegate: delegate)
 
       // Wait for the enabled expectation to be fulfilled, or timeout after 5 seconds
       print("Waiting for UARTDeviceManager to be enabled...")
       delegate.waitForEnabledExpectation()
 
       print("Scanning...")
-      print("ACTION REQUIRED: Turn on one or more Birdbrain UART devices, then turn them all off (in any order) to verify handling of peripheral disappearance.")
-      XCTAssertTrue(deviceManager.startScanning(timeoutSecs: 600.0, assumeDisappearanceAfter: 1.0), "Expected startScanning() to return true")
+      print("ACTION REQUIRED: Turn on one or more CubeTower devices, then turn them all off (in any order) to verify handling of peripheral disappearance.")
+      XCTAssertTrue(deviceManager.startScanning(timeoutSecs: 600.0, assumeDisappearanceAfter: 3.0), "Expected startScanning() to return true")
 
       delegate.waitForDisappearExpectation(timeout: 600.0)
       XCTAssertTrue(deviceManager.stopScanning())
@@ -381,7 +371,7 @@ final class UARTTests: XCTestCase {
 
    static var allTests = [
       ("testLinuxTestSuiteIncludesAllTests", testLinuxTestSuiteIncludesAllTests),
-      ("testDeviceDisappearanceSuccess", testDeviceDisappearanceSuccess),
+      ("testCubeTowerDisappearanceSuccess", testCubeTowerDisappearanceSuccess),
       ("testCubeTowerConnectDisconnectSuccess", testCubeTowerConnectDisconnectSuccess),
       ("testCubeTowerStateUpdateSuccess", testCubeTowerStateUpdateSuccess),
       ("testCubeTowerSetLEDsSuccess", testCubeTowerSetLEDsSuccess),
