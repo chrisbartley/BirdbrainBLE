@@ -61,6 +61,11 @@ open class UARTDeviceManager<DeviceType: ManageableUARTDevice> {
    open func getDevice(uuid: UUID) -> DeviceType? {
       return connectedDevices[uuid]
    }
+
+   /// Returns the number of connected devices
+   open func getConnectedDeviceCount() -> Int {
+      connectedDevices.count
+   }
 }
 
 extension UARTDeviceManager: BLECentralManagerDelegate {
