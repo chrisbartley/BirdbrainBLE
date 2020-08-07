@@ -157,19 +157,19 @@ open class StandardBLEPeripheral: NSObject, BLEPeripheral {
 
 extension StandardBLEPeripheral: CBPeripheralDelegate {
    public func peripheralDidUpdateName(_ peripheral: CBPeripheral) {
-      os_log("CBPeripheralDelegate.peripheralDidUpdateName unimplemented!", log: OSLog.log, type: .error)
+      os_log("CBPeripheralDelegate.peripheralDidUpdateName is not yet supported by StandardBLEPeripheral", log: OSLog.log, type: .info)
    }
 
    public func peripheral(_ peripheral: CBPeripheral, didModifyServices invalidatedServices: [CBService]) {
-      os_log("CBPeripheralDelegate.didModifyServices unimplemented!", log: OSLog.log, type: .error)
+      os_log("CBPeripheralDelegate.didModifyServices is not yet supported by StandardBLEPeripheral", log: OSLog.log, type: .info)
    }
 
    public func peripheralDidUpdateRSSI(_ peripheral: CBPeripheral, error: Error?) {
-      os_log("CBPeripheralDelegate.peripheralDidUpdateRSSI unimplemented!", log: OSLog.log, type: .error)
+      os_log("CBPeripheralDelegate.peripheralDidUpdateRSSI is not yet supported by StandardBLEPeripheral", log: OSLog.log, type: .info)
    }
 
    public func peripheral(_ peripheral: CBPeripheral, didReadRSSI RSSI: NSNumber, error: Error?) {
-      os_log("CBPeripheralDelegate.didReadRSSI unimplemented!", log: OSLog.log, type: .error)
+      os_log("CBPeripheralDelegate.didReadRSSI is not yet supported by StandardBLEPeripheral", log: OSLog.log, type: .info)
    }
 
    public func peripheral(_ peripheral: CBPeripheral, didUpdateValueFor characteristic: CBCharacteristic, error: Error?) {
@@ -185,20 +185,20 @@ extension StandardBLEPeripheral: CBPeripheralDelegate {
    }
 
    public func peripheral(_ peripheral: CBPeripheral, didUpdateValueFor descriptor: CBDescriptor, error: Error?) {
-      os_log("CBPeripheralDelegate.didUpdateValueForDescriptor unimplemented!", log: OSLog.log, type: .error)
+      os_log("CBPeripheralDelegate.didUpdateValueForDescriptor is not yet supported by StandardBLEPeripheral", log: OSLog.log, type: .info)
    }
 
    public func peripheral(_ peripheral: CBPeripheral, didWriteValueFor descriptor: CBDescriptor, error: Error?) {
-      os_log("CBPeripheralDelegate.didWriteValueForDescriptor unimplemented!", log: OSLog.log, type: .error)
+      os_log("CBPeripheralDelegate.didWriteValueForDescriptor is not yet supported by StandardBLEPeripheral", log: OSLog.log, type: .info)
    }
 
    public func peripheralIsReady(toSendWriteWithoutResponse peripheral: CBPeripheral) {
-      os_log("CBPeripheralDelegate.peripheralIsReady unimplemented!", log: OSLog.log, type: .error)
+      delegate?.blePeripheral(self, isReadyToSendWriteWithoutResponse: true)
    }
 
    @available(iOS 11.0, *)
    public func peripheral(_ peripheral: CBPeripheral, didOpen channel: CBL2CAPChannel?, error: Error?) {
-      os_log("CBPeripheralDelegate.didOpenChannel unimplemented!", log: OSLog.log, type: .error)
+      os_log("CBPeripheralDelegate.didOpenChannel is not yet supported by StandardBLEPeripheral", log: OSLog.log, type: .error)
    }
 
    // this should never be called, because the peripheral will already be connected and fully discovered before creation of this instance

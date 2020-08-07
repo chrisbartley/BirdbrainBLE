@@ -11,6 +11,8 @@ public protocol BLEPeripheralDelegate {
    func blePeripheral(_ peripheral: BLEPeripheral, didUpdateValueFor characteristicUUID: CBUUID, value: Data?, error: Error?)
 
    func blePeripheral(_ peripheral: BLEPeripheral, didWriteValueFor characteristicUUID: CBUUID, error: Error?)
+
+   func blePeripheral(_ peripheral: BLEPeripheral, isReadyToSendWriteWithoutResponse: Bool)
 }
 
 public extension BLEPeripheralDelegate {
@@ -19,4 +21,6 @@ public extension BLEPeripheralDelegate {
    func blePeripheral(_ peripheral: BLEPeripheral, didUpdateValueFor characteristicUUID: CBUUID, value: Data?, error: Error?) {}
 
    func blePeripheral(_ peripheral: BLEPeripheral, didWriteValueFor characteristicUUID: CBUUID, error: Error?) {}
+
+   func blePeripheral(_ peripheral: BLEPeripheral, isReadyToSendWriteWithoutResponse: Bool) {}
 }
