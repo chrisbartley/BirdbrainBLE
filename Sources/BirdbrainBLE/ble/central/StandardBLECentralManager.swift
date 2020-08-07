@@ -264,11 +264,6 @@ extension StandardBLECentralManager: CBCentralManagerDelegate {
 
       let uuid = peripheral.identifier
 
-      // print("IN DISCOVERY [\(uuid)]:")
-      // for (key, val) in advertisementData {
-      //    print("   [\(key)]=[\(val)]")
-      // }
-
       // determine whether we've seen this one before and add/update accordingingly
       if var peripheralInfo = peripheralInfoByUUID[uuid] {
          // we've seen this one before, so simply update lastSeen and advertisementData.  We'll update advertisementData
