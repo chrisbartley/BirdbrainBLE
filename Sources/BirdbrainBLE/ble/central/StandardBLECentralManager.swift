@@ -275,11 +275,11 @@ extension StandardBLECentralManager: CBCentralManagerDelegate {
          peripheralInfo.advertisementData = peripheralInfo.advertisementData.merging(advertisementData) { (_, new) in new}
          peripheralInfoByUUID[uuid] = peripheralInfo
 
-         os_log("CBCentralManagerDelegate.didDiscover: Re-discovered peripheral [%s] total=%d state=[%{public}s|%{public}s]", log: OSLog.log, type: .debug,
-                uuid.uuidString,
-                peripheralInfoByUUID.count,
-                String(describing: peripheralInfo.state),
-                String(describing: peripheralInfo.peripheral.state))
+         // os_log("CBCentralManagerDelegate.didDiscover: Re-discovered peripheral [%s] total=%d state=[%{public}s|%{public}s]", log: OSLog.log, type: .debug,
+         //        uuid.uuidString,
+         //        peripheralInfoByUUID.count,
+         //        String(describing: peripheralInfo.state),
+         //        String(describing: peripheralInfo.peripheral.state))
 
          // when notifying the delegate, send the *merged* advertisementData, rather than the one we just received, so
          // that we'll be sure to include everything we've ever known about the peripheral (for our purposes, this
