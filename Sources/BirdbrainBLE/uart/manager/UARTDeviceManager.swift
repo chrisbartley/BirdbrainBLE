@@ -50,10 +50,12 @@ open class UARTDeviceManager<DeviceType: ManageableUARTDevice> {
       return bleCentralManager.stopScanning()
    }
 
+   @discardableResult
    open func connectToDevice(havingUUID uuid: UUID) -> Bool {
       return bleCentralManager.connectToPeripheral(havingUUID: uuid)
    }
 
+   @discardableResult
    open func disconnectFromDevice(havingUUID uuid: UUID) -> Bool {
       return bleCentralManager.disconnectFromPeripheral(havingUUID: uuid)
    }

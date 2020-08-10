@@ -142,6 +142,7 @@ public class StandardBLECentralManager: NSObject, BLECentralManager {
       return false
    }
 
+   @discardableResult
    public func connectToPeripheral(havingUUID uuid: UUID) -> Bool {
       // make sure BLE is powered on
       if centralManager.state != .poweredOn {
@@ -177,6 +178,7 @@ public class StandardBLECentralManager: NSObject, BLECentralManager {
       return false
    }
 
+   @discardableResult
    public func disconnectFromPeripheral(havingUUID uuid: UUID) -> Bool {
       // make sure BLE is powered on
       if centralManager.state != .poweredOn {
