@@ -14,7 +14,7 @@ open class UARTDeviceManager<DeviceType: ManageableUARTDevice> {
 
    //MARK: - Public Properties
 
-   public var delegate: UARTDeviceManagerDelegate?
+   public weak var delegate: UARTDeviceManagerDelegate?
 
    //MARK: - Private Properties
 

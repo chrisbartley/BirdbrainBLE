@@ -25,7 +25,7 @@ open class BaseUARTDevice: UARTDevice {
 
    public private(set) var advertisementSignature: AdvertisementSignature?
 
-   public var delegate: UARTDeviceDelegate?
+   public weak var delegate: UARTDeviceDelegate?
 
    //MARK: - Private Properties
 

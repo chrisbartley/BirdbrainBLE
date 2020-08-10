@@ -396,7 +396,7 @@ final class BLETests: XCTestCase {
          }
 
          let promise = expectation(description: "Notifications turned on and then back off")
-         peripheral.delegate = TestPeripheralDelegate(
+         let delegate = TestPeripheralDelegate(
                didEnableNotifying: {
                   // tell the peripheral to start notifying
                   print("[\(Date().timeIntervalSince1970)]: sending startNotificationsCommand")
@@ -422,6 +422,7 @@ final class BLETests: XCTestCase {
                      XCTFail("No value updates received!")
                   }
                })
+         peripheral.delegate = delegate
 
          // first need to enable notifications
          print("[\(Date().timeIntervalSince1970)]: calling setNotifyEnabled()")

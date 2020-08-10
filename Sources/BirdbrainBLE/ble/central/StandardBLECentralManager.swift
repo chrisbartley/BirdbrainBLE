@@ -24,7 +24,7 @@ public class StandardBLECentralManager: NSObject, BLECentralManager {
 
    //MARK: - Public Properties
 
-   public var delegate: BLECentralManagerDelegate?
+   public weak var delegate: BLECentralManagerDelegate?
 
    //MARK: - Private Properties
 

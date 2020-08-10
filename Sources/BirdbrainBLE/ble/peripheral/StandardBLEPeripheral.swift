@@ -26,7 +26,7 @@ open class StandardBLEPeripheral: NSObject, BLEPeripheral {
 
    public let advertisedName: String?
 
-   public var delegate: BLEPeripheralDelegate?
+   public weak var delegate: BLEPeripheralDelegate?
 
    //MARK: - Private properties
 
