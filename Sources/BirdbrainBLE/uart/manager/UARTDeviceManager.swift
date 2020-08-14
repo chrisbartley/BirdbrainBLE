@@ -106,7 +106,10 @@ extension UARTDeviceManager: BLECentralManagerDelegate {
                                rssi: rssi)
       }
       else {
-         os_log("BLECentralManagerDelegate: Ignoring discovery of device which doesn't pass scan filter: [uuid=%s]", log: OSLog.log, type: .debug, uuid.uuidString)
+         delegate?.didIgnoreDiscovery(uuid: uuid,
+                                      advertisementData: advertisementData,
+                                      rssi: rssi,
+                                      wasRediscovery: false)
       }
    }
 
@@ -118,7 +121,10 @@ extension UARTDeviceManager: BLECentralManagerDelegate {
                                  rssi: rssi)
       }
       else {
-         os_log("BLECentralManagerDelegate: Ignoring rediscovery of device which doesn't pass scan filter: [uuid=%s]", log: OSLog.log, type: .debug, uuid.uuidString)
+         delegate?.didIgnoreDiscovery(uuid: uuid,
+                                      advertisementData: advertisementData,
+                                      rssi: rssi,
+                                      wasRediscovery: true)
       }
    }
 
