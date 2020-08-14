@@ -12,19 +12,20 @@ import CoreBluetooth
 
 public struct AdvertisementSignature {
    static private let colors = [
-      CGColor.create(rgb: 0xFF0000), // red
-      CGColor.create(rgb: 0x00FF00), // green
-      CGColor.create(rgb: 0x0000FF), // blue
-      CGColor.create(rgb: 0xFFFF00), // yellow
-      CGColor.create(rgb: 0xFF00FF), // magenta
-      CGColor.create(rgb: 0x00FFFF), // teal
-      CGColor.create(rgb: 0xFFFFFF), // white
+      "FF0000", // red
+      "00FF00", // green
+      "0000FF", // blue
+      "FFFF00", // yellow
+      "FF00FF", // magenta
+      "00FFFF", // teal
+      "FFFFFF", // white
    ]
 
    public let advertisedName: String
    public let deviceName: String
    public let memorableName: String?
    public let colors: (color0: CGColor, color1: CGColor, color2: CGColor)
+   public let hexColors: (color0: String, color1: String, color2: String)
 
    public init?(advertisementData: [String : Any]) {
       self.init(advertisedName: advertisementData[CBAdvertisementDataLocalNameKey] as? String)
@@ -54,10 +55,15 @@ public struct AdvertisementSignature {
                self.advertisedName = advertisedName
                self.deviceName = deviceName
                self.memorableName = MemorableNameGenerator.instance.generateNameFrom(advertisedName: advertisedName)
-               self.colors = (
+               self.hexColors = (
                      color0: AdvertisementSignature.colors[Int(first8right4 + first8left4) % AdvertisementSignature.colors.count],
                      color1: AdvertisementSignature.colors[Int(middle6) % AdvertisementSignature.colors.count],
                      color2: AdvertisementSignature.colors[Int(last6) % AdvertisementSignature.colors.count]
+               )
+               self.colors = (
+                     color0: CGColor.create(rgb: Int(self.hexColors.color0, radix: 16)!),
+                     color1: CGColor.create(rgb: Int(self.hexColors.color1, radix: 16)!),
+                     color2: CGColor.create(rgb: Int(self.hexColors.color2, radix: 16)!)
                )
                return
             }
