@@ -11,21 +11,44 @@ import CoreBluetooth
 #endif
 
 public struct AdvertisementSignature {
-   static private let colors = [
-      "FF0000", // red
-      "00FF00", // green
-      "0000FF", // blue
-      "FFFF00", // yellow
-      "FF00FF", // magenta
-      "00FFFF", // teal
-      "FFFFFF", // white
-   ]
+
+   public enum Color: String, CaseIterable, CustomStringConvertible {
+      case red
+      case green
+      case blue
+      case yellow
+      case magenta
+      case teal
+      case white
+
+      public var description: String {
+         self.rawValue
+      }
+
+      public var cgColor: CGColor {
+         switch self {
+            case .red:
+               return CGColor.create(rgb: 0xDF443A)
+            case .green:
+               return CGColor.create(rgb: 0x2E9E51)
+            case .blue:
+               return CGColor.create(rgb: 0x245EA2)
+            case .yellow:
+               return CGColor.create(rgb: 0xF5A623)
+            case .magenta:
+               return CGColor.create(rgb: 0xB12CB1)
+            case .teal:
+               return CGColor.create(rgb: 0x00C7DF)
+            case .white:
+               return CGColor.create(rgb: 0xC0C0C0)
+         }
+      }
+   }
 
    public let advertisedName: String
    public let deviceName: String
    public let memorableName: String?
-   public let colors: (color0: CGColor, color1: CGColor, color2: CGColor)
-   public let hexColors: (color0: String, color1: String, color2: String)
+   public let colors: (color0: Color, color1: Color, color2: Color)
 
    public init?(advertisementData: [String : Any]) {
       self.init(advertisedName: advertisementData[CBAdvertisementDataLocalNameKey] as? String)
@@ -55,15 +78,13 @@ public struct AdvertisementSignature {
                self.advertisedName = advertisedName
                self.deviceName = deviceName
                self.memorableName = MemorableNameGenerator.instance.generateNameFrom(advertisedName: advertisedName)
-               self.hexColors = (
-                     color0: AdvertisementSignature.colors[Int(first8right4 + first8left4) % AdvertisementSignature.colors.count],
-                     color1: AdvertisementSignature.colors[Int(middle6) % AdvertisementSignature.colors.count],
-                     color2: AdvertisementSignature.colors[Int(last6) % AdvertisementSignature.colors.count]
-               )
+
+               // Note: It's same to use allCases here, because CaseIterable ensures that "the synthesized allCases
+               // collection provides the cases in order of their declaration"
                self.colors = (
-                     color0: CGColor.create(rgb: Int(self.hexColors.color0, radix: 16)!),
-                     color1: CGColor.create(rgb: Int(self.hexColors.color1, radix: 16)!),
-                     color2: CGColor.create(rgb: Int(self.hexColors.color2, radix: 16)!)
+                     color0: Color.allCases[Int(first8right4 + first8left4) % Color.allCases.count],
+                     color1: Color.allCases[Int(middle6) % Color.allCases.count],
+                     color2: Color.allCases[Int(last6) % Color.allCases.count]
                )
                return
             }

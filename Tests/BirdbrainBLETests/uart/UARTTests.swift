@@ -6,40 +6,6 @@ import CoreBluetooth
 
 @testable import BirdbrainBLE
 
-// Based on https://stackoverflow.com/a/24263296/703200
-extension CGColor {
-   static func create(red: Int, green: Int, blue: Int, alpha: CGFloat = 1.0) -> CGColor {
-      assert(red >= 0 && red <= 255, "Invalid red component")
-      assert(green >= 0 && green <= 255, "Invalid green component")
-      assert(blue >= 0 && blue <= 255, "Invalid blue component")
-
-      #if os(iOS)
-         return UIColor(red: CGFloat(red) / 255.0, green: CGFloat(green) / 255.0, blue: CGFloat(blue) / 255.0, alpha: alpha).cgColor
-      #else
-         return CGColor(red: CGFloat(red) / 255.0, green: CGFloat(green) / 255.0, blue: CGFloat(blue) / 255.0, alpha: alpha)
-      #endif
-   }
-
-   static func create(rgb: Int, alpha: CGFloat = 1.0) -> CGColor {
-      return CGColor.create(red: (rgb >> 16) & 0xFF,
-                            green: (rgb >> 8) & 0xFF,
-                            blue: rgb & 0xFF,
-                            alpha: alpha)
-   }
-}
-
-fileprivate struct Colors {
-   static let red = CGColor.create(rgb: 0xFF0000)
-   static let green = CGColor.create(rgb: 0x00FF00)
-   static let blue = CGColor.create(rgb: 0x0000FF)
-   static let yellow = CGColor.create(rgb: 0xFFFF00)
-   static let magenta = CGColor.create(rgb: 0xFF00FF)
-   static let teal = CGColor.create(rgb: 0x00FFFF)
-   static let white = CGColor.create(rgb: 0xFFFFFF)
-
-   private init() {}
-}
-
 fileprivate class DisappearDeviceManagerDelegate: UARTDeviceManagerDelegate {
    private let testCase: XCTestCase
    private let enabledExpectation: XCTestExpectation
@@ -282,11 +248,12 @@ final class UARTTests: XCTestCase {
    }
 
    func testAdvertisementSignature() {
-      let name1 = (advertised: "CTCF2C3", expected: (memorable: "Singing Scarlet Tiger", device: "CF2C3", colors: (color0: Colors.green, color1: Colors.green, color2: Colors.blue), hexColors: (color0: "00FF00", color1: "00FF00", color2: "0000FF")))
-      let name2 = (advertised: "CTC0D80", expected: (memorable: "Intrepid Copper Slug", device: "C0D80", colors: (color0: Colors.green, color1: Colors.white, color2: Colors.white), hexColors: (color0: "00FF00", color1: "FFFFFF", color2: "FFFFFF")))
-      let name3 = (advertised: "GBD521C", expected: (memorable: "Creative Lime Bee", device: "D521C", colors: (color0: Colors.white, color1: Colors.magenta, color2: Colors.magenta), hexColors: (color0: "FFFFFF", color1: "FF00FF", color2: "FF00FF")))
-      let name4 = (advertised: "GB932CA", expected: (memorable: "Spikey Titanium Seahorse", device: "932CA", colors: (color0: Colors.green, color1: Colors.green, color2: Colors.green), hexColors: (color0: "00FF00", color1: "00FF00", color2: "00FF00")))
-      let name5 = (advertised: "728E4", expected: (memorable: "Thorny Plum Lion", device: "728E4", colors: (color0: Colors.magenta, color1: Colors.teal, color2: Colors.red), hexColors: (color0: "FF00FF", color1: "00FFFF", color2: "FF0000")))
+      typealias Color = AdvertisementSignature.Color
+      let name1 = (advertised: "CTCF2C3", expected: (memorable: "Singing Scarlet Tiger", device: "CF2C3", colors: (color0: Color.green, color1: Color.green, color2: Color.blue)))
+      let name2 = (advertised: "CTC0D80", expected: (memorable: "Intrepid Copper Slug", device: "C0D80", colors: (color0: Color.green, color1: Color.white, color2: Color.white)))
+      let name3 = (advertised: "GBD521C", expected: (memorable: "Creative Lime Bee", device: "D521C", colors: (color0: Color.white, color1: Color.magenta, color2: Color.magenta)))
+      let name4 = (advertised: "GB932CA", expected: (memorable: "Spikey Titanium Seahorse", device: "932CA", colors: (color0: Color.green, color1: Color.green, color2: Color.green)))
+      let name5 = (advertised: "728E4", expected: (memorable: "Thorny Plum Lion", device: "728E4", colors: (color0: Color.magenta, color1: Color.teal, color2: Color.red)))
 
       let as1 = AdvertisementSignature(advertisedName: name1.advertised)
       let as2 = AdvertisementSignature(advertisedName: name2.advertised)
@@ -323,21 +290,6 @@ final class UARTTests: XCTestCase {
       XCTAssertEqual(as3?.colors.color2, name3.expected.colors.color2)
       XCTAssertEqual(as4?.colors.color2, name4.expected.colors.color2)
       XCTAssertEqual(as5?.colors.color2, name5.expected.colors.color2)
-      XCTAssertEqual(as1?.hexColors.color0, name1.expected.hexColors.color0)
-      XCTAssertEqual(as2?.hexColors.color0, name2.expected.hexColors.color0)
-      XCTAssertEqual(as3?.hexColors.color0, name3.expected.hexColors.color0)
-      XCTAssertEqual(as4?.hexColors.color0, name4.expected.hexColors.color0)
-      XCTAssertEqual(as5?.hexColors.color0, name5.expected.hexColors.color0)
-      XCTAssertEqual(as1?.hexColors.color1, name1.expected.hexColors.color1)
-      XCTAssertEqual(as2?.hexColors.color1, name2.expected.hexColors.color1)
-      XCTAssertEqual(as3?.hexColors.color1, name3.expected.hexColors.color1)
-      XCTAssertEqual(as4?.hexColors.color1, name4.expected.hexColors.color1)
-      XCTAssertEqual(as5?.hexColors.color1, name5.expected.hexColors.color1)
-      XCTAssertEqual(as1?.hexColors.color2, name1.expected.hexColors.color2)
-      XCTAssertEqual(as2?.hexColors.color2, name2.expected.hexColors.color2)
-      XCTAssertEqual(as3?.hexColors.color2, name3.expected.hexColors.color2)
-      XCTAssertEqual(as4?.hexColors.color2, name4.expected.hexColors.color2)
-      XCTAssertEqual(as5?.hexColors.color2, name5.expected.hexColors.color2)
       XCTAssertNil(AdvertisementSignature(advertisedName: ""))
       XCTAssertNil(AdvertisementSignature(advertisedName: "FFFF"))
       XCTAssertNil(AdvertisementSignature(advertisedName: "   0D80"))
