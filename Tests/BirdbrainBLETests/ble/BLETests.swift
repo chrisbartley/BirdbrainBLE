@@ -201,9 +201,9 @@ final class BLETests: XCTestCase {
             XCTAssertFalse(centralManager.connectToPeripheral(havingUUID: uuid), "Redundant connect while connected should return false")
 
             // sleep for a second
-            print("Sleeping for 10 seconds...")
+            print("Sleeping for 1 second...")
             do {
-               sleep(10)
+               sleep(1)
             }
 
             // now disconnect
@@ -250,6 +250,7 @@ final class BLETests: XCTestCase {
             print("END WAITING FOR connectSuccessExpectation \(Date().timeIntervalSince1970)")
 
             if let connectedPeripheral = delegate.connectedPeripheral {
+               print("Peripheral has a max write-with-response size of [\(connectedPeripheral.maximumWriteWithResponseDataLength())] and a max write-without-response size of [\(connectedPeripheral.maximumWriteWithoutResponseDataLength())]")
                print("[\(Date().timeIntervalSince1970)]: Start running tests...")
                let additionalTestsDoneExpectation = expectation(description: "Additional tests are done")
                additionalTests(connectedPeripheral, additionalTestsDoneExpectation)

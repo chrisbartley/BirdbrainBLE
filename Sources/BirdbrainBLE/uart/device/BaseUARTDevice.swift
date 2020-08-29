@@ -68,6 +68,10 @@ open class BaseUARTDevice: UARTDevice {
    public func writeWithoutResponse(data: Data) {
       let _ = blePeripheral.writeWithoutResponse(data: data, toCharacteristic: BaseUARTDevice.txUUID)
    }
+
+   public func maximumWriteWithResponseDataLength() -> Int { blePeripheral.maximumWriteWithResponseDataLength() }
+
+   public func maximumWriteWithoutResponseDataLength() -> Int { blePeripheral.maximumWriteWithoutResponseDataLength() }
 }
 
 extension BaseUARTDevice: BLEPeripheralDelegate {

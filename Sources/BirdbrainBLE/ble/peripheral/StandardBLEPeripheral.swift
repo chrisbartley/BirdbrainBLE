@@ -100,6 +100,14 @@ open class StandardBLEPeripheral: NSObject, BLEPeripheral {
       return write(data: data, toCharacteristic: uuid, writeType: .withoutResponse)
    }
 
+   public func maximumWriteWithResponseDataLength() -> Int {
+      peripheral.maximumWriteValueLength(for: .withResponse)
+   }
+
+   public func maximumWriteWithoutResponseDataLength() -> Int {
+      peripheral.maximumWriteValueLength(for: .withoutResponse)
+   }
+
    //MARK: - Private methods
 
    private func findCharacteristic(havingUUID uuid: CBUUID) -> CBCharacteristic? {

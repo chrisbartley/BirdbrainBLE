@@ -24,13 +24,19 @@ public protocol BLEPeripheral: class {
 
    func read(fromCharacteristic uuid: CBUUID) -> Bool
 
-   // Tries to write the given data to the specified characteristic.  Returns true if the characteristic exists and
-   // supports writing with response; false otherwise.
+   /// Tries to write the given data to the specified characteristic.  Returns true if the characteristic exists and
+   /// supports writing with response; false otherwise.
    func writeWithResponse(bytes: [UInt8], toCharacteristic uuid: CBUUID) -> Bool
    func writeWithResponse(data: Data, toCharacteristic uuid: CBUUID) -> Bool
 
-   // Tries to write the given data to the specified characteristic.  Returns true if the characteristic exists and
-   // supports writing without response; false otherwise.
+   /// Tries to write the given data to the specified characteristic.  Returns true if the characteristic exists and
+   /// supports writing without response; false otherwise.
    func writeWithoutResponse(bytes: [UInt8], toCharacteristic uuid: CBUUID) -> Bool
    func writeWithoutResponse(data: Data, toCharacteristic uuid: CBUUID) -> Bool
+
+   /// Returns the maximum amount of data, in bytes, you can send to a characteristic in a single write-with-response.
+   func maximumWriteWithResponseDataLength() -> Int
+
+   /// Returns the maximum amount of data, in bytes, you can send to a characteristic in a single write-without-response.
+   func maximumWriteWithoutResponseDataLength() -> Int
 }

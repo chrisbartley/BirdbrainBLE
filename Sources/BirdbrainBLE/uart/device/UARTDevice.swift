@@ -16,4 +16,10 @@ public protocol UARTDevice: UARTDeviceIdentifier {
    func writeWithResponse(data: Data)
    func writeWithoutResponse(bytes: [UInt8])
    func writeWithoutResponse(data: Data)
+
+   /// Returns the maximum amount of data, in bytes, you can send in a single write-with-response.
+   func maximumWriteWithResponseDataLength() -> Int
+
+   /// Returns the maximum amount of data, in bytes, you can send in a single write-without-response.
+   func maximumWriteWithoutResponseDataLength() -> Int
 }

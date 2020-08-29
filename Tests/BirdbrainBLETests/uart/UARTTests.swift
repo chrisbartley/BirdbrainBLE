@@ -160,6 +160,7 @@ final class UARTTests: XCTestCase {
             if let connectedUUID = delegate.connectedUUID {
                if let uart = deviceManager.getDevice(uuid: connectedUUID) {
                   print("Connected to UART \(uart.uuid)")
+                  print("UART has a max write-with-response size of [\(uart.maximumWriteWithResponseDataLength())] and a max write-without-response size of [\(uart.maximumWriteWithoutResponseDataLength())]")
                   print("[\(Date().timeIntervalSince1970)]: Start running tests...")
                   let additionalTestsDoneExpectation = expectation(description: "Additional tests are done")
                   additionalTests(uart, additionalTestsDoneExpectation)
