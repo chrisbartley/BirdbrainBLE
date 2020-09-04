@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/BirdbrainBLE.iml" filepath="$PROJECT_DIR$/.idea/BirdbrainBLE.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/BirdbrainBLE-CPB.iml" filepath="$PROJECT_DIR$/.idea/BirdbrainBLE-CPB.iml" />
     </modules>
   </component>
 </project>
