@@ -108,6 +108,10 @@ open class StandardBLEPeripheral: NSObject, BLEPeripheral {
       peripheral.maximumWriteValueLength(for: .withoutResponse)
    }
 
+   public func readRSSI() {
+      peripheral.readRSSI()
+   }
+
    //MARK: - Private methods
 
    private func findCharacteristic(havingUUID uuid: CBUUID) -> CBCharacteristic? {
@@ -174,10 +178,16 @@ extension StandardBLEPeripheral: CBPeripheralDelegate {
 
    public func peripheralDidUpdateRSSI(_ peripheral: CBPeripheral, error: Error?) {
       os_log("CBPeripheralDelegate.peripheralDidUpdateRSSI is not yet supported by StandardBLEPeripheral", log: OSLog.log, type: .info)
+      delegate?.blePeripheral(self, failedToReadRSSIDueTo: BLEError.unsupportedOperation)
    }
 
-   public func peripheral(_ peripheral: CBPeripheral, didReadRSSI RSSI: NSNumber, error: Error?) {
-      os_log("CBPeripheralDelegate.didReadRSSI is not yet supported by StandardBLEPeripheral", log: OSLog.log, type: .info)
+   public func peripheral(_ peripheral: CBPeripheral, didReadRSSI rssi: NSNumber, error: Error?) {
+      if let error = error {
+         delegate?.blePeripheral(self, failedToReadRSSIDueTo: error)
+      }
+      else {
+         delegate?.blePeripheral(self, didReadRSSI: rssi)
+      }
    }
 
    public func peripheral(_ peripheral: CBPeripheral, didUpdateValueFor characteristic: CBCharacteristic, error: Error?) {

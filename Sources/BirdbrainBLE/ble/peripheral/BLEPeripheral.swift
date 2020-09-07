@@ -39,4 +39,6 @@ public protocol BLEPeripheral: class {
 
    /// Returns the maximum amount of data, in bytes, you can send to a characteristic in a single write-without-response.
    func maximumWriteWithoutResponseDataLength() -> Int
+
+   func readRSSI()
 }

@@ -7,6 +7,7 @@ import Foundation
 enum BLEError: Error {
    case noServicesFound
    case noCharacteristicsFound
+   case unsupportedOperation
 }
 
 // Enable more human-readable printing/logging
@@ -15,6 +16,7 @@ extension BLEError: CustomStringConvertible {
       switch self {
          case .noServicesFound: return "No Services Found"
          case .noCharacteristicsFound: return "No Characteristics Found"
+         case .unsupportedOperation: return "Unsupported Operation"
       }
    }
 }

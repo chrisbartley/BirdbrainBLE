@@ -13,6 +13,10 @@ public protocol BLEPeripheralDelegate: class {
    func blePeripheral(_ peripheral: BLEPeripheral, didWriteValueFor characteristicUUID: CBUUID, error: Error?)
 
    func blePeripheral(_ peripheral: BLEPeripheral, isReadyToSendWriteWithoutResponse: Bool)
+
+   func blePeripheral(_ peripheral: BLEPeripheral, didReadRSSI rssi: NSNumber)
+
+   func blePeripheral(_ peripheral: BLEPeripheral, failedToReadRSSIDueTo error: Error?)
 }
 
 public extension BLEPeripheralDelegate {
@@ -23,4 +27,8 @@ public extension BLEPeripheralDelegate {
    func blePeripheral(_ peripheral: BLEPeripheral, didWriteValueFor characteristicUUID: CBUUID, error: Error?) {}
 
    func blePeripheral(_ peripheral: BLEPeripheral, isReadyToSendWriteWithoutResponse: Bool) {}
+
+   func blePeripheral(_ peripheral: BLEPeripheral, didReadRSSI rssi: NSNumber) {}
+
+   func blePeripheral(_ peripheral: BLEPeripheral, failedToReadRSSIDueTo error: Error?) {}
 }
