@@ -85,7 +85,7 @@ open class StandardBLEPeripheral: NSObject, BLEPeripheral {
    }
 
    public func writeWithResponse(bytes: [UInt8], toCharacteristic uuid: CBUUID) -> Bool {
-      return writeWithResponse(data: Data(bytes: UnsafePointer<UInt8>(bytes), count: bytes.count), toCharacteristic: uuid)
+      return writeWithResponse(data: Data(bytes), toCharacteristic: uuid)
    }
 
    public func writeWithResponse(data: Data, toCharacteristic uuid: CBUUID) -> Bool {
@@ -93,7 +93,7 @@ open class StandardBLEPeripheral: NSObject, BLEPeripheral {
    }
 
    public func writeWithoutResponse(bytes: [UInt8], toCharacteristic uuid: CBUUID) -> Bool {
-      return writeWithoutResponse(data: Data(bytes: UnsafePointer<UInt8>(bytes), count: bytes.count), toCharacteristic: uuid)
+      return writeWithoutResponse(data: Data(bytes), toCharacteristic: uuid)
    }
 
    public func writeWithoutResponse(data: Data, toCharacteristic uuid: CBUUID) -> Bool {
