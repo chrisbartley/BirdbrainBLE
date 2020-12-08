@@ -24,7 +24,7 @@ class MemorableNameGenerator {
 
    func generateNameFrom(advertisementData: [String : Any]) -> (advertisedName: String?, name: String?) {
       if let advertisedName = advertisementData[CBAdvertisementDataLocalNameKey] as? String {
-         return (name: generateNameFrom(advertisedName: advertisedName), advertisedName: advertisedName)
+         return (advertisedName: advertisedName, name: generateNameFrom(advertisedName: advertisedName))
       }
       return (advertisedName: nil, name: nil)
    }
