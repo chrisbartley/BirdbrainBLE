@@ -423,7 +423,7 @@ class MemorableNameGenerator {
       "Remarkable",
       "Righteous",
       "Robotic",
-      "Rockin&apos;",
+      "Rockin'",
       "Rough",
       "Round",
       "Royal",
