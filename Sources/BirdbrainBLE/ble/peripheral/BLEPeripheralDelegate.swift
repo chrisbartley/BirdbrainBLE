@@ -5,7 +5,7 @@
 import Foundation
 import CoreBluetooth
 
-public protocol BLEPeripheralDelegate: class {
+public protocol BLEPeripheralDelegate: AnyObject {
    func blePeripheral(_ peripheral: BLEPeripheral, didUpdateNotificationStateFor characteristicUUID: CBUUID, isNotifying: Bool, error: Error?)
 
    func blePeripheral(_ peripheral: BLEPeripheral, didUpdateValueFor characteristicUUID: CBUUID, value: Data?, error: Error?)

@@ -4,7 +4,7 @@
 
 import Foundation
 
-public protocol UARTDeviceDelegate: class {
+public protocol UARTDeviceDelegate: AnyObject {
    func uartDevice(_ device: UARTDevice, isSendingStateChangeNotifications: Bool)
    func uartDevice(_ device: UARTDevice, newState state: Data)
    func uartDevice(_ device: UARTDevice, errorGettingState error: Error)

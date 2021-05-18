@@ -5,7 +5,7 @@
 import Foundation
 import CoreBluetooth
 
-public protocol BroadcastBLECentralManagerDelegate: class {
+public protocol BroadcastBLECentralManagerDelegate: AnyObject {
    func didUpdateState(to state: CBManagerState)
    func didPowerOn()
    func didPowerOff()

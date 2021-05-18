@@ -5,7 +5,7 @@
 import Foundation
 import CoreBluetooth
 
-public protocol BLEPeripheral: class {
+public protocol BLEPeripheral: AnyObject {
    var uuid: UUID { get }
 
    /// A name for this peripheral, or `nil` if no name is available. Subclasses are free to override and define however

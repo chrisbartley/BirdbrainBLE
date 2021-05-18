@@ -4,7 +4,7 @@
 
 import Foundation
 
-public protocol UARTDeviceManagerDelegate: class {
+public protocol UARTDeviceManagerDelegate: AnyObject {
    func didUpdateState(to state: UARTDeviceManagerState)
    func didDiscover(uuid: UUID, advertisementSignature: AdvertisementSignature?, advertisementData: [String : Any], rssi: NSNumber)
    func didRediscover(uuid: UUID, advertisementSignature: AdvertisementSignature?, advertisementData: [String : Any], rssi: NSNumber)
